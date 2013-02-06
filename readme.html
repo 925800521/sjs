@@ -62,10 +62,9 @@
 	<ul class="detail" >
 		<li class="title">sjs(function($){}) </li>
 		<li class="tip">dom加载完成后的执行函数</li>
-		<li class="title">sjs.noConflict() </li>
-		<li class="tip">多库共存，运行这个函数将变量$的控制权让渡给第一个实现它的那个库。</li>
 		<li class="title">each(callback)</li>
-		<li class="tip">以每一个匹配的元素作为上下文来执行一个函数。返回 'false' 将停止循环 (就像在普通的循环中使用 'break')。返回 'true' 跳至下一个循环(就像在普通的循环中使用'continue')。</li>
+		<li class="tip">以每一个匹配的元素作为上下文来执行一个函数。返回 'false' 将停止循环 (就像在普通的循环中使用 'break')。返回 'true' 跳至下一个循环(就像在普通的循环中使用'continue')。
+</li>
 		<li class="title">length</li>
 		<li class="tip">当前sjs对象中元素的个数。</li>
 		<li class="title">selector</li>
@@ -78,7 +77,8 @@
 	<h4 >2。数据缓存</h4>
 	<ul class="detail" >
 		<li class="title">data([key],[value])</li>
-		<li class="tip">在一个sjs对象上存放数据,而不是像jquery一样在每个匹配的dom上存放数据。但是参数用法一样。返回sjs对象或者数据。</li>
+		<li class="tip">在一个sjs对象上存放数据,而不是像jquery一样在每个匹配的dom上存放数据。但是参数用法一样。返回sjs对象或者数据。
+</li>
 		<li class="title">removeData([name|list])</li>
 		<li class="tip">在元素上移除存放的数据</li>
 	</ul>

@@ -1,12 +1,18 @@
 (function(window,undefined){
-  var wd=window.document,
+	var wd=window.document,
+		_$=window.$?window.$:undefined;
 		wn=window.Navigator,
 		wl=window.location,
 		type=function(o){
-			return Object.prototype.toString.call(o);
+			return o!=undefined?Object.prototype.toString.call(o):'undefined';
 		},
 		/*基础工具类*/
 		untils={
+			noConflict:function(){
+				if (_$) {
+					window.$=_$;
+				}
+			},
 			uniqueId:function(){
 				var t=new Date().getTime(),r=parseInt(Math.random()*100000);
 				return t*100000+r;
@@ -367,6 +373,55 @@
 				}
 			}
 		}
+		//ajax回调函数绑定
+		function ajaxcall(xhr,s){
+			if (!s || !xhr) {return false;};
+			if (s.success) {
+				xhr.onload=function(e){
+					var res=null;
+					switch(s.dataType){
+						case 'json':
+						case 'script':
+							res=sjs.eval(this.responseText);
+						break;
+						default:
+							res=this.response;
+						break;
+					}
+					s.success.call(s.context,res,this);
+				}
+			}
+			if (s.abort) {
+				xhr.onabort=function(e){
+					s.abort.call(s.context,this);
+				}
+			}
+			if (s.error) {
+				xhr.onerror=function(e){
+					s.error.call(s.context,this);
+				}
+			}
+			if (s.beforeSend) {
+				xhr.onloadstart=function(e){
+					s.beforeSend.call(s.context,this);
+				}
+			}
+			if (s.complete) {
+				xhr.onloadend=function(e){
+					s.complete.call(s.context,this);
+				}
+			}
+			if (s.progress) {
+				xhr.onprogress=function(e){
+					s.progress.call(s.context,e);
+				}
+			}
+			if (s.upProgress){
+				xhr.upload.onprogress=function(e){
+					 s.upProgress.call(s.context,e);
+				}
+			}
+		}
 		var _domdatas={},DOMS={
 	 		data:function(k,v){
 	 			if (this.length>0) {
@@ -549,60 +604,99 @@
 			}
 	 	},
 	 	AJAXS={
-	 		ajax:function(url,setting){
+	 		ajax:function(url,s){
 				var _s = {
 					async : true, 		// 异步
 					cache : false, 		// 是否读取缓存
 					type : 'GET', 		// 请求方式
-					dataType:'html',	//返回数据类型,xml|html|script|json|jsonp,textong
+					dataType:'html',	// 返回数据类型,xml|html|css|script|json|blod|arraybuffer
 					mime:'text/html',
 					data : {}, 			// 要随请求发送的键值对
-					charset:'utf-8',	//编码
+					charset:'utf-8',	// 编码
 					contentType:'application/x-www-form-urlencoded',
-					timeout:10000,		//超时
 					// 事件函数句柄
-					progress:null,
+					context:s,       	// 回调函数的上下文，默认为传递的参数对象
+					progress:null,		// 下载进度，参数为当前事件对象
+					upProgress:null,	// 上传进度，参数为当前事件对象
 					beforeSend : null, 	// 请求开始前的函数句柄
-					success : null, 	// 请求成功函数句柄，有两个参数，一个是返回的字符串型状态，一个是返回的内容
-					error : null, 		// 请求失败似的函数句柄，不管成功或者失败，两个参数，一个是返回的字符串型状态，一个是返回的内容
-					complete : null, 	// 请求结束后的函数句柄,不管成功或者失败
-					dataFilter:null		//返回数据的过滤数组
+					success : null, 	// 请求成功函数句柄，有两个参数，第一个是返回的数据，第二个是XMLHttpRequest对象
+					abort : null, 		// 请求被取消时的回调句柄，并且传入一个XMLHttpRequest作为参数		
+					error : null, 		// 请求失败似的函数句柄，并且传入一个XMLHttpRequest作为参数
+					complete : null 	// 请求结束后的函数句柄,不管成功或者失败，并且传入一个XMLHttpRequest作为参数
 				};
 				if (!sjs.isString(url)) {return false}
-				var _t=new Date().getTime(),_s=sjs.isPlainObject(setting)?sjs.extend(_s,setting):_s,
-					xhr=new XMLHttpRequest(),url=url.indexOf('?')>-1?url+'&':url+'?',
-					os=_s.cache?{}:{'_t':_t};
-					sjs.extend(os,_s.data);
-					url+=sjs.JSONS.toQuery(os);
+				var _t=new Date().getTime(),_s=s?sjs.extend(_s,s):_s,
+					xhr=new XMLHttpRequest,url=url.indexOf('?')>-1?url+'&':url+'?',postd=_s.data;
+					url+=_s.cache?'':'_t='+_t;
+ 					if ((_s.type).toLowerCase()=='get') {
+						url+=sjs.JSONS.toQuery(_s.data);
+						postd=null;
+					}
+					if (_s.dataType=='blod' || _s.dataType=='arraybuffer') {
+						xhr.responseType=_s.dataType;
+					}
 	 			if (xhr) {
-					xhr.onload=function(e){
-						if (_s.success) {_s.success(e)};
-					}
-					xhr.onerror=function(e){
-						if (_s.error) {_s.error(e)};
-					}
-					xhr.onloadstart=function(e){
-						if (_s.beforeSend) {_s.beforeSend(e)};
-					}
-					xhr.onloadend=function(e){
-						if (_s.complete) {_s.complete(e)};
-					}
-					xhr.onprogress=function(e){
-						if (_s.progress) {_s.progress(e)};
-					}
+	 				ajaxcall(xhr,_s);
 			        xhr.open(_s.type, url, _s.async);
 			        xhr.setRequestHeader("Accept", _s.mime);
 					xhr.setRequestHeader("Content-Type", _s.contentType+"; charset="+_s.charset+"");
-			        xhr.send();
+			        xhr.send(postd);
 				}else{
 					if (sjs.isFunction(_s.error)) {_s.error('ajax不被支持！')}
 				}
+				return xhr;
 			},
-			get:function(){
-
+			ajaxForm:function(sel,s){
+ 				$(sel).each(function(d){
+ 					if (d.nodeName.toLowerCase()=='form') {
+						var fd = new FormData(d),xhr=new XMLHttpRequest();
+						if (s && s.data) {
+							for (var k in s.data) {
+								fd.append(k,s.data[k]);
+							}
+						}
+						ajaxcall(xhr,s);
+						xhr.open(d.method,d.action);
+						xhr.send(fd);
+ 					}
+ 				});
 			},
-			post:function(){
-
+			get:function(u,d,f,t){
+				if (!u) {return false;}
+				var _d=d,_f=f,_t=t;
+				if (sjs.isFunction(_d)) {
+					_t=_f;
+					_f=_d;
+					_d=null;
+				}
+				return sjs.ajax(u,{success:_f,data:_d,dataType:_t||'html'});
+			},
+			getJSON:function(u,d,f){
+				if (!u) {return false;}
+				var _d=d,_f=f;
+				if (sjs.isFunction(_d)) {
+					_f=_d;
+					_d=null;
+				}
+				return sjs.ajax(u,{success:_f,data:_d,dataType:'json'});
+			},
+			getScript:function(u,f){
+				if (!u) {return false;}
+				var script=document.createElement('script');
+				script.async=true;
+				script.src=u;
+				script.onload=f;
+				document.body.appendChild(script);
+			},
+			post:function(u,d,f,t){
+				if (!u) {return false;}
+				var _d=d,_f=f,_t=t;
+				if (sjs.isFunction(_d)) {
+					_t=_f;
+					_f=_d;
+					_d=null;
+				}
+				return sjs.ajax(u,{type:'post',success:_f,data:_d,dataType:_t});
 			}
 	 	};
 	 	/**事件管理栈*/
