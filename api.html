@@ -64,6 +64,10 @@
 		<li class="tip">dom加载完成后的执行函数</li>
 		<li class="title">sjs.noConflict() </li>
 		<li class="tip">多库共存，运行这个函数将变量$的控制权让渡给第一个实现它的那个库。</li>
+		<li class="title">sjs.extend(object) </li>
+		<li class="tip">扩展jQuery对象本身</li>
+		<li class="title">sjs.fn.extend(object) </li>
+		<li class="tip">扩展 jQuery 元素集来提供新的方法（通常用来制作插件）。</li>
 		<li class="title">each(callback)</li>
 		<li class="tip">以每一个匹配的元素作为上下文来执行一个函数。返回 'false' 将停止循环 (就像在普通的循环中使用 'break')。返回 'true' 跳至下一个循环(就像在普通的循环中使用'continue')。</li>
 		<li class="title">length</li>
@@ -78,23 +82,33 @@
 	<h4 >2。数据缓存</h4>
 	<ul class="detail" >
 		<li class="title">data([key],[value])</li>
-		<li class="tip">在一个sjs对象上存放数据,而不是像jquery一样在每个匹配的dom上存放数据。但是参数用法一样。返回sjs对象或者数据。</li>
+		<li class="tip">在每个匹配的dom上存放数据。但是参数用法一样。返回sjs对象或者数据。</li>
 		<li class="title">removeData([name|list])</li>
 		<li class="tip">在元素上移除存放的数据</li>
 	</ul>
-	<h4 >3。DOM操作</h4>
+	<h4 >3。属性操作</h4>
 	<ul class="detail" >
 		<li class="title">html([val|fn])</li>
 		<li class="tip">获取或者设置匹配元素的html内容，获取时只获取第一个匹配元素的html内容，设置时可以使回调函数，传入的参数为（index,oldHTML）</li>
-		<li class="title">css(name|pro|[,val|fn])<span class="red">*</span></li>
-		<li class="tip">于jquery唯一的不同就是不支持驼峰写法</li>
+		<li class="title">val([val|fn])<span class="red">*</span></li>
+		<li class="tip">设置或获得匹配元素的当前值。不支持数组参数</li>
+		<li class="title">text([val|fn])</li>
+		<li class="tip">设置或获得匹配元素的内容。</li>
+		<li class="title">attr(name|properties|key,value|fn)<span class="red">*</span></li>
+		<li class="tip">设置或返回被选元素的属性值。<span class="red">*</span></li>
+		<li class="title">removeAttr(name)</li>
+		<li class="tip">删除算重元素的属性</li>
 		<li class="title">addClass(class|Array|fn) <span class="red">*</span></li>
 		<li class="tip">为每个匹配的元素添加指定的类名。<span class="red">*</span>也可以接受数组</li>
 		<li class="title">removeClass([class|Array|fn]) <span class="red">*</span></li>
 		<li class="tip">从所有匹配的元素中删除全部或者指定的类。没参数删除所有<span class="red">*</span>也可以接受数组</li>
 		<li class="title">toggleClass(class|Array|fn) <span class="red">*</span></li>
 		<li class="tip">如果存在（不存在）就删除（添加）一个类。<span class="red">*</span>去掉了没怎么用过的参数switch</li>
-		<li class="title">remove() <span class="red">*</span></li>
+	</ul>
+	<h4 >4。样式操作</h4>
+	<ul class="detail" >	
+		<li class="title">css(name|pro|[,val|fn])<span class="red">*</span></li>
+		<li class="tip">设置（所有匹配元素）或者取得(第一个匹配元素)某样式值</li>		<li class="title">remove() <span class="red">*</span></li>
 		<li class="tip">删除符合要求的节点。<span class="red">*</span>参数中的选择器去掉了</li>
 		<li class="title">getBox() <span class="red">new</span></li>
 		<li class="tip">返回dom列表中第一个元素的相对于浏览器左上角的Box模型信息</li>
@@ -105,7 +119,12 @@
 		<li class="title">inBox(x,y) <span class="red">new</span></li>
 		<li class="tip">检测所给点是否在box模型内，x，y均相对于浏览器窗口左上角，event可用clientX,clientY</li>
 	</ul>
-	<h4 >4。事件</h4>
+	<h4 >5。文档处理</h4>
+	<ul class="detail" >	
+		<li class="title">append</li>
+		<li class="tip"></li>
+	</ul>
+	<h4 >6。事件</h4>
 	<ul class="detail" >
 		<li class="title">on(type,[data],fn)<span class="red">*</span></li>
 		<li class="tip">新的利用事件委托机制实现的事件绑定行为，不再像jquery一样提供selector参数。，回调函数的event.data来获取传入的data值，event.firecnt来获取执行的次数，另外如果函数返回false，那么函数将自动解除绑定，可定制性更高</li>
@@ -139,8 +158,6 @@
 		<li class="tip">检查对象是否简单对象类型，主要用于检测json</li>
 		<li class="title">$.isEmptyObject(o) </li>
 		<li class="tip">检查对象是否空对象类型，主要用于检测json和array</li>
-		<li class="title">$.eval(o) </li>
-		<li class="tip">用Function构造器重写了eval</li>
 		<li class="title">$.isEmptyString(o) </li>
 		<li class="tip">检查字符串是否空串</li>
 		<li class="title">$.trim(o) </li>
@@ -153,11 +170,9 @@
 		<li class='title'>$.inArray(value,array,[fromIndex])</li>
 		<li class="tip">确定第一个参数在数组中的位置，从0开始计数(如果没有找到则返回 -1 )。</li>
 		<li class="title">$.each(obj,callback) </li>
-		<li class="tip">通用例遍方法，可用于例遍对象和数组。
-不同于例遍对象的 $().each() 方法，此方法可用于例遍任何对象。回调函数拥有两个参数：第一个为对象的成员或数组的索引，第二个为对应变量或内容。如果需要退出 each 循环可使回调函数返回 false，其它返回值将被忽略。与jquery的不同之处在于，过滤函数中的this是待过滤对象本身而不是jquery的window。</li>	
+		<li class="tip">通用例遍方法，可用于例遍对象和数组。不同于例遍对象的 $().each() 方法，此方法可用于例遍任何对象。回调函数拥有两个参数：第一个为对象的成员或数组的索引，第二个为对应变量或内容。如果需要退出 each 循环可使回调函数返回 false，其它返回值将被忽略。与jquery的不同之处在于，过滤函数中的this是待过滤对象本身而不是jquery的window。</li>	
 		<li class="title">$.grep(o,callback,[invert])</li>
-		<li class="tip">使用过滤函数过滤数组元素。
-此函数至少传递两个参数：待过滤数组和过滤函数。过滤函数必须返回 true 以保留元素或 false 以删除元素。返回过滤后的数组，该函数不修改原数组。。"invert" 为 false 或未设置，则函数返回数组中由过滤函数返回 true 的元素.与jquery的不同之处在于，过滤函数中的this是待过滤对象本身而不是jquery的window。</li>
+		<li class="tip">使用过滤函数过滤数组元素。此函数至少传递两个参数：待过滤数组和过滤函数。过滤函数必须返回 true 以保留元素或 false 以删除元素。返回过滤后的数组，该函数不修改原数组。。"invert" 为 false 或未设置，则函数返回数组中由过滤函数返回 true 的元素.与jquery的不同之处在于，过滤函数中的this是待过滤对象本身而不是jquery的window。</li>
 		<li class="title">$.merge(first,second) </li>
 		<li class="tip">合并两个数组返回的结果会修改第一个数组的内容——第一个数组的元素后面跟着第二个数组的元素。要去除重复项，请使用$.unique().(吐槽：真不知道有concat用merge干嘛不就是，返回值变了，哎兼容留着吧)</li>
 		<li class="title">$.unique(array) <span class="red">*</span> </li>
@@ -182,11 +197,10 @@
 		<li class="tip">返回json中元素的个数</li>
 	</ul>
 	<h4 >4。AJAX对象 <Span class="red">*</span></h4>
-	<div class="tip">常规ajax操作，注意没有jsonp，因为jquery的jsonp只是</div>
+	<div class="tip">常规ajax操作，注意没有jsonp，h5里要jsonp干嘛</div>
 	<ul class="detail" >
 		<li class="title">$.ajax(url,[settings]) <Span class="red">*</span></li>
-		<li class="tip">这个方法精简了，简单易用的高层实现见 $.get, $.post 等。$.ajax() 返回其创建的 XMLHttpRequest 对象。你可以用该对象的abort()方法来终止函数执行。
-下面直接把参数列出来：<Br>
+		<li class="tip">这个方法精简了，简单易用的高层实现见 $.get, $.post 等。$.ajax() 返回其创建的 XMLHttpRequest 对象。你可以用该对象的abort()方法来终止函数执行。下面直接把参数列出来：<Br>
 			<div class="code">{
 					async : true, 		// 异步<br>
 					cache : false, 		// 是否读取缓存<br>
@@ -217,9 +231,10 @@
 		<li class="title">$.getScript(url, [callback]) </li>
 		<li class="tip">通过 HTTP GET 请求载入并执行一个 JavaScript 文件。</li>
 		<li class='title'>$.ajaxForm(selector,[setting]) <span class="red">new</span> </li>
-		<li class="tip">新增了form表单ajax提交方法，selector为要提交的form表单的选择器，setting中紧紧提供了设置ajax中的回调函数部分，和data数据部分。本方法可上传文件,O(∩_∩)O</li>
+		<li class="tip">新增了form表单ajax提交方法，selector为要提交的form表单的选择器，setting中紧紧提供了设置ajax中的回调函数部分，和data数据部分。本方法可上传文件,O(∩_∩)O, <span class="red">*</span>不过遗憾的是，移动设备ios5.0以下和android3.0以下是无法使用该方法的，桌面浏览器表现良好。</li>
 	</ul>
 </div>
-
+<hr>
+<footer>build by awen   71752352@qq.com || cczw2010@gmail.com</footer>
 </body>
 </html>

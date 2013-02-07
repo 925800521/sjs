@@ -1,3 +1,6 @@
+/**
+ * build by awen  71752352@qq.com
+ */
 (function(window,undefined){
 	var wd=window.document,
 		_$=window.$?window.$:undefined;
@@ -55,10 +58,6 @@
 					return false;
 				}
 				return true;
-			},
-			/*代替eval*/
-			eval:function(s){ 
-				return new Function('return '+s)();
 			},
 			/**正则*/
 			isEmptyString:function(s){
@@ -161,7 +160,7 @@
 		        		return null;  
 					}
 					d =sjs.trim(d);
-					return window.JSON?JSON.parse(d):sjs.eval(d);
+					return window.JSON?JSON.parse(d):eval(d);
 				},
 				stringify:function(O){
 					if (!O) {
@@ -226,40 +225,7 @@
 			}
 		},
 		//构建sjs对象
-		sjs=function(s){
-			if (window==this) {return new sjs(s)};
-			if (!s) {
-				return this;
-			}
-			/**如果是函数则为ready*/
-			if (sjs.isFunction(s)) {
-				document.addEventListener("DOMContentLoaded", function(e) {
-					s.call(window,sjs);
-				});
-			}
-			// sjs(DOMElement)
-			if (s.nodeType) {
-				this[0] = s;
-				this.length = 1;
-				//dom对象的唯一标志
-				index(s);
-			}
-			// sjs(string)
-			if ( typeof s === "string" ) {
-				if ( s.charAt(0) === "<" && s.charAt( s.length - 1 ) === ">" && s.length >= 3 ) {
-					//暂时不处理html代码
-				} else {
-					var doms=wd.querySelectorAll(s);
-					this.length = doms.length;
-					for (var i = 0,len=doms.length; i<len; i++) {
-						index(doms[i]);
-						this[i]=doms[i];
-					}
-					this.selector=s;
-				}
-			}
-			return this;
-		};
+		sjs=function(s){return sjs.fn._init(s);};
 		//对象原型
 		sjs.fn=sjs.prototype={
 			selector: "",
@@ -278,6 +244,40 @@
 					}
 				}
 				return -1;
+			},
+			_init:function(s){
+				if (window==this) {return new sjs(s)};
+				if (!s) {
+					return this;
+				}
+				/**如果是函数则为ready*/
+				if (sjs.isFunction(s)) {
+					document.addEventListener("DOMContentLoaded", function(e) {
+						s.call(window,sjs);
+					});
+				}
+				// sjs(DOMElement)
+				if (s.nodeType) {
+					this[0] = s;
+					this.length = 1;
+					//dom对象的唯一标志
+					index(s);
+				}
+				// sjs(string)
+				if ( typeof s === "string" ) {
+					if ( s.charAt(0) === "<" && s.charAt( s.length - 1 ) === ">" && s.length >= 3 ) {
+						//暂时不处理html代码
+					} else {
+						var doms=wd.querySelectorAll(s);
+						this.length = doms.length;
+						for (var i = 0,len=doms.length; i<len; i++) {
+							index(doms[i]);
+							this[i]=doms[i];
+						}
+						this.selector=s;
+					}
+				}
+				return this;
 			}
 		}
 		//主要扩展方法
@@ -382,7 +382,7 @@
 					switch(s.dataType){
 						case 'json':
 						case 'script':
-							res=sjs.eval(this.responseText);
+							res=eval(this.responseText);
 						break;
 						default:
 							res=this.response;
@@ -445,7 +445,7 @@
 	 			if (sjs.isString(name) && !sjs.isEmptyString(name)) {
 	 				name=name.split(" ");
 	 			}
-	 			this.each(function(d){
+	 			return this.each(function(d){
  					if (sjs.isArray(name)) {
  						sjs.each(name,function(i,n){
  							dd(d,n)
@@ -454,7 +454,6 @@
 		 				dd(d);
  					}
 	 			});
-	 			return this;
 	 		},
 	 		html:function(s){
 	 			if (this.length==0) {
@@ -464,14 +463,45 @@
 	 				return this[0].innerHTML;
 	 			}
 	 			var h=sjs.isString(s)?s:null,isfunc=sjs.isFunction(s);
-	 			this.each(function(d,i){
+	 			return this.each(function(d,i){
 	 				if (isfunc) {
 	 					h=s.call(this,i,this.innerHTML);
 	 					if (!h) {return true;};
 	 				};
 	 				this.innerHTML=h;
 	 			});
-	 			return this;
+	 		},
+	 		val:function(s){
+	 			return s==undefined?this[0].value:this.each(function(d,i){
+	 				if (sjs.isFunction(s)) {
+	 					var r=s.call(d,i,d.value);
+	 					if (r!=undefined) {
+	 						d.value=r;
+	 					}
+	 				}else{
+	 					d.value=s;
+	 				}
+	 			});
+	 		},
+	 		text:function(s){
+	 			if (s) {
+	 				return this.each(function(d,i){
+	 					if (sjs.isFunction(s)) {
+	 						var r=s.call(d,i,d.textContent);
+	 						if (r!=undefined) {
+	 							d.textContent=r;
+	 						}
+	 					}else{
+	 						d.textContent=s;
+	 					}
+	 				});
+	 			}else{
+	 				var ret='';
+	 				this.each(function(d){
+	 					ret+=d.textContent;
+	 				});
+	 				return ret;
+	 			}
 	 		},
 	 		css:function(a,b){
 	 			if (a==undefined||this.length==0) {return this};
@@ -488,6 +518,43 @@
 	 				});
 	 			}
 	 			return this;
+	 		},
+	 		/*name|properties|key,value|fn*/
+	 		attr:function(a,b){
+	 			if (a) {
+	 				if (b) {
+	 					//两个参数
+	 					if (sjs.isFunction(b)) {
+	 						this.each(function(d,i){
+	 							var v=d.getAttribute(a),r=b.call(d,i,v);
+	 							if (r!=undefined) {
+	 								d.setAttribute(a,r);
+	 							};
+	 						});
+	 					}else{
+	 						this.each(function(d){
+	 							d.setAttribute(a,b);
+	 						});
+	 					}
+	 				}else{
+	 					//一个参数
+	 					if (sjs.isString(a)) {
+	 						return this[0].getAttribute(a);
+	 					}else if (sjs.isPlainObject(a)) {
+	 						this.each(function(d){
+	 							sjs.each(a,function(k,v){
+	 								d.setAttribute(k,v);
+	 							})
+	 						})
+	 					}
+	 				}
+	 			};
+	 			return this;
+	 		},
+	 		removeAttr:function(n){
+	 			return this.each(function(d){
+	 				d.removeAttribute(n);
+	 			});
 	 		},
 	 		getBox:function(){
 				//safari3.2没有getBoundingClientRect
@@ -582,7 +649,7 @@
 					}
 				});
 			},
-			taggleClass:function(c){
+			toggleClass:function(c){
 				if (c==undefined||this.length==0) {return this};
 				var cs=sjs.isFunction(c)?null:ba(c);
  				return this.each(function(d,i){
@@ -738,7 +805,7 @@
 					//在本对象的事件选择器列表中获取所有绑定事件时使用过的选择器来检索事件
 					this.each(function(d){
 						//始终传入的最后一个参数为event(手动除外)
-						e=arguments[arguments.length-1];
+						var e=arguments[arguments.length-1];
 						e=e.type?e:{'type':et,'target':d};
 						var hash=index(d),items=_listeners[et][hash]||[],_dels=[];
 						for (var j=0,len = items.length; j <len; j++) {

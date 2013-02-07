@@ -1,0 +1,109 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<script type="text/javascript" src="jquery.min.js"></script>
+	<script type="text/javascript" src="../sjs.js"></script>
+	<title>className操作测试</title>
+	<style type="text/css">
+	div{
+		border:1px solid #333;
+		width: 100px;
+		height: 50px;
+		display: inline-block;
+		margin: 10px;
+	}
+	</style>
+</head>
+<body>
+	<p>
+		className操作测试。jQuery完胜，sjs高频率循环惨败，后期会优化<br>
+		（*请在控制台中中查看性能分析测试。没有用任何测试函数，纯代码计算换时间的精准，因为封个函数测试的是偶调用函数也会耗系统时间）
+	</p>
+	<div class='test' id="id1">div#id1</div>
+	<div class='test' id="id2">div#id2</div>
+	<div class='test' id="id3">div#id3</div>
+	<div class='test' id="id4">div#id4</div>
+	<div class='test' id="id5">div#id5</div>
+	<div class='test' id="id6">div#id6</div>
+	<div class='test' id="id7">div#id7</div>
+	<div class='test' id="id8">div#id8</div>
+	<div class='test' id="id9">div#id9</div>
+	<div class='test' id="id10">div#id10</div>
+
+	
+	<div id="id01" class="test">div#id01</div>
+	<div id="id02" class="test">div#id02</div>
+	<div id="id03" class="test">div#id03</div>
+	<div id="id04" class="test">div#id04</div>
+	<div id="id05" class="test">div#id05</div>
+	<div id="id06" class="test">div#id06</div>
+	<div id="id07" class="test">div#id07</div>
+	<div id="id08" class="test">div#id08</div>
+	<div id="id09" class="test">div#id09</div>
+	<div id="id10" class="test">div#id10</div>
+	<script type="text/javascript">
+	/**
+	 * test by awen
+	 * 71752352@qq.com
+	 */
+		var title='className操作测试',cnts=[10,100,1000],
+			sels=['div','#id1','.test','div.test','div[id=id2]','div:nth-child(3)'];
+
+		console.debug(title+">>>>");
+ 		for (var i = sels.length-1; i >=0; i--) {
+ 			console.group("选择器："+sels[i]);
+ 			for (var j = 0,l=cnts.length; j <l; j++) {
+ 				console.group("运行次数="+cnts[j]);
+ 				////////////设置数据//////////////////////
+ 				console.group("设置className");
+ 				//sjs
+ 				console.time('sjs');
+ 				for (var m=0,n=cnts[j]; m <n; m++) {
+ 					 sjs(sels[i]).addClass('cname');
+ 				}
+ 				console.timeEnd('sjs');
+				//jquery
+ 				console.time('jQuery');
+ 				for (var m=0,n=cnts[j]; m <n; m++) {
+ 					 jQuery(sels[i]).addClass('cname1');
+ 				}
+ 				console.timeEnd('jQuery');
+ 				console.groupEnd();
+ 				////////////删除数据//////////////////////
+ 				console.group("删除className");
+ 				//sjs
+ 				console.time('sjs');
+ 				for (var m=0,n=cnts[j]; m <n; m++) {
+ 					 sjs(sels[i]).removeClass('cname');
+ 				}
+ 				console.timeEnd('sjs');
+				//jquery
+ 				console.time('jQuery');
+ 				for (var m=0,n=cnts[j]; m <n; m++) {
+ 					 jQuery(sels[i]).removeClass('cname1');
+ 				}
+ 				console.timeEnd('jQuery');
+ 				console.groupEnd();
+ 				////////////toggle切换className//////////////////////
+ 				console.group("toggle切换className");
+ 				//sjs
+ 				console.time('sjs');
+ 				for (var m=0,n=cnts[j]; m <n; m++) {
+ 					 sjs(sels[i]).toggleClass('cname');
+ 				}
+ 				console.timeEnd('sjs');
+				//jquery
+ 				console.time('jQuery');
+ 				for (var m=0,n=cnts[j]; m <n; m++) {
+ 					 jQuery(sels[i]).toggleClass('cname1');
+ 				}
+ 				console.timeEnd('jQuery');
+ 				console.groupEnd();
+ 				console.groupEnd();
+ 			};
+ 			console.groupEnd();
+		}
+	</script>
+</body>
+</html>
