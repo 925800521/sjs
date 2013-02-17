@@ -1,0 +1,76 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<script type="text/javascript" src="../sjs.js"></script>
+	<title>raf demo</title>
+	<style type="text/css">
+	div{
+		border:1px solid #333;
+		width: 100px;
+		height: 50px;
+		display: inline-block;
+		margin: 10px;
+	}
+	</style>
+</head>
+<body>
+	<input value="开始动画1" type='button' title='1'>
+	<input value="暂停动画1" type='button' title='2'>
+	<input value="恢复动画1" type='button' title='3'>
+	<input value="停止动画1" type='button' title='4'>
+	<br>
+	<input value="开始动画2" type='button' title='5'>
+	<input value="暂停动画2" type='button' title='6'>
+	<input value="恢复动画2" type='button' title='7'>
+	<input value="停止动画2" type='button' title='8'>
+
+	<hr>
+	<div id="box">box</div>
+	<br>
+	<div id="rect">rect</div>
+</body>
+<script type="text/javascript">
+	var l1=l2=0,step1=1,step2=2;
+	var raf1=new $.raf(60,function(cnt){
+		if (l1>300) {return false};
+		l1+=step1;
+		$('#box').css('marginLeft',l1+'px');
+	});
+	var raf2=new $.raf(40,function(cnt){
+		if (cnt>100) {this.stop()};
+		l2+=step2;
+		$('#rect').css('marginLeft',l2+'px');
+	});
+	// ////////////////////////////////
+	$('input').on('click',function(e){
+		console.log(this.value);
+		switch(e.target.title){
+			case '1':
+				raf1.start();
+			break;
+			case '2':
+				raf1.pause();
+			break;
+			case '3':
+				raf1.resume();
+			break;
+			case '4':
+				raf1.stop();
+			break;
+			case '5':
+				raf2.start();
+			break;
+			case '6':
+				raf2.pause();
+			break;
+			case '7':
+				raf2.resume();
+			break;
+			case '8':
+				raf2.stop();
+			break;
+		}
+	});
+</script>
+</html>

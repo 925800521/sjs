@@ -1,0 +1,88 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<script type="text/javascript" src="jquery.min.js"></script>
+	<script type="text/javascript" src="../sjs.js"></script>
+	<title>css()操作测试</title>
+	<style type="text/css">
+	div{
+		border:1px solid #333;
+		width: 100px;
+		height: 50px;
+		display: inline-block;
+		margin: 10px;
+	}
+	</style>
+</head>
+<body>
+	<p>
+		$.css()取值和赋值操作测试。sjs略显优势<br>
+		（*请在控制台中中查看性能分析测试。没有用任何测试函数，纯代码计算换时间的精准，因为封个函数测试调用函数也会耗系统时间）
+	</p>
+	<div id="info">	div	</div>
+	<select name="" id="ss">
+		<option value="s1">s11</option>
+		<option value="s2">s22</option>
+		<option value="s3">s44</option>
+		<option value="s4">s33</option>
+		<option value="s5">s55</option>
+	</select>
+	<input type="checkbox" name="cc" id="c1" ><input type="checkbox" name="cc" id="c2"  value='c222'>
+		<input type="radio" name="rr" id="r1"  value='r111'><input type="radio" name="rr" id="r2"  value='r222'>
+	<input type="text" name="" id="t1">
+	<input type="text" name="" id="t2">
+	<input type="button" value="btn1" id="btn1">
+	<input type="button" value="btn2" id="btn2">
+	<script type="text/javascript">
+		var cnts=[10,100,1000];
+		console.group('取值计算');
+		for (var i = cnts.length - 1; i >= 0; i--) {
+			console.group(cnts[i]+"次计算");
+				//sjs
+				console.group('sjs');
+				console.time('sjs');
+				for (var j = cnts[i] - 1; j >= 0; j--) {
+					sjs('*').css('color');
+				};
+				console.timeEnd('sjs');
+				console.groupEnd();
+
+				//jQuery
+				console.group("jQuery");
+				console.time('jQuery');
+				for (var j = cnts[i] - 1; j >= 0; j--) {
+					jQuery('*').css('color');
+				};
+				console.timeEnd('jQuery');
+				console.groupEnd();
+			console.groupEnd();
+		};
+		console.groupEnd();
+
+		console.group('赋值计算');
+		for (var i = cnts.length - 1; i >= 0; i--) {
+			//sjs
+			console.group(cnts[i]+"次计算");
+				console.group('sjs');
+				console.time('sjs');
+				for (var j = cnts[i] - 1; j >= 0; j--) {
+					sjs('*').css('color','#f30');
+				};
+				console.timeEnd('sjs');
+				console.groupEnd();
+
+				//jQuery
+				console.group("jQuery");
+				console.time('jQuery');
+				for (var j = cnts[i] - 1; j >= 0; j--) {
+					jQuery('*').css('color','#03f');
+				};
+				console.timeEnd('jQuery');
+				console.groupEnd();
+			console.groupEnd();
+		};
+		console.groupEnd();
+	</script>
+</body>
+</html>

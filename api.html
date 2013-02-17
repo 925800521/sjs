@@ -69,13 +69,19 @@
 		<li class="title">sjs.fn.extend(object) </li>
 		<li class="tip">扩展 jQuery 元素集来提供新的方法（通常用来制作插件）。</li>
 		<li class="title">each(callback)</li>
-		<li class="tip">以每一个匹配的元素作为上下文来执行一个函数。返回 'false' 将停止循环 (就像在普通的循环中使用 'break')。返回 'true' 跳至下一个循环(就像在普通的循环中使用'continue')。</li>
+		<li class="tip">以每一个匹配的元素作为上下文来执行一个函数。返回 'false' 将停止循环 (就像在普通的循环中使用 'break')。返回 'true' 跳至下一个循环(就像在普通的循环中使用'continue')。
+			<div class="code">
+				sjs('div').each(function(dom,i){ /*do somthing*/ });
+			</div>
+		</li>
 		<li class="title">length</li>
 		<li class="tip">当前sjs对象中元素的个数。</li>
 		<li class="title">selector</li>
 		<li class="tip">记录sjs对象的原始选择器</li>
-		<li class="title">get(index)</li>
-		<li class="tip">取得其中一个匹配的dom元素。num表示取得第几个匹配的元素。</li>
+		<li class="title">get([index])</li>
+		<li class="tip">取得其中一个匹配的dom元素。 如果没有参数取得所有匹配的 DOM 元素集合。</li>
+		<li class="title">eq(index)</li>
+		<li class="tip">获取第N个元素的sjs对象，可以用负数倒序索引，-1代表最后一个匹配对象</li>
 		<li class="title">index() <span class="red">*</span></li>
 		<li class="tip">返回对象本身相对于父对象的索引,从0开始计数。,<span class="red">*</span>cut掉了jquery中该接口的其他功能</li>
 	</ul>
@@ -121,7 +127,7 @@
 	</ul>
 	<h4 >5。文档处理</h4>
 	<ul class="detail" >	
-		<li class="title">append</li>
+		<li class="title">尚未实现。预留位置</li>
 		<li class="tip"></li>
 	</ul>
 	<h4 >6。事件</h4>
@@ -139,6 +145,15 @@
 		<li class="title"><del>unbind(type,[data|fn]])</del></li>
 		<li class="tip">off的别名，只是为了兼容预留</li>
 	</ul>
+	<h4 >7。动画</h4>
+	<ul class="detail" >	
+		<li class="title">animate(params,[speed],[easing],[fn])</li>
+		<li class="tip">与jquery的用法基本一样，如果你想用animate(params,options)的方式调用，那么参数只提供了speed，easing,fn三个键值</li>
+		<li class="title">delay(duration)</li>
+		<li class="tip">设置一个延时来推迟当前对象动画执行队列中之后的项目。</li>
+		<li class="title">stop([clearQueue])</li>
+		<li class="tip">停止所有在指定元素上正在运行的动画(clearQueue默认true)。如果队列中有等待执行的动画(并且clearQueue没有设为true)，他们将被马上执行</li>
+	</ul>
 </div>
 <h3>三 扩展</h3>
 <div class="indent">
@@ -146,6 +161,8 @@
 	<ul class="detail" >
 		<li class="title">$.uniqueId() </li>
 		<li class="tip">返回一个唯一数</li>
+		<li class="title">$.type(obj) </li>
+		<li class="tip">检测obj的数据类型。返回值如：Object,String,Function,Array,Date...</li>
 		<li class="title">$.isArray(o) </li>
 		<li class="tip"> 检测对象是否数组,本来html5的Array对象本身自带isArray(o)方法判断。但是为了某些智能机的低端浏览器。。</li>
 		<li class="title">$.isBoolean(o)</li>
@@ -153,7 +170,6 @@
 		<li class="title">$.isFunction(o) </li>
 		<li class="title">$.isNumeric(o) </li>
 		<li class="title">$.isXML(o) </li>
-		<li class="title">$.isObject(o) </li>
 		<li class="title">$.isPlainObject(o) </li>
 		<li class="tip">检查对象是否简单对象类型，主要用于检测json</li>
 		<li class="title">$.isEmptyObject(o) </li>
@@ -167,7 +183,7 @@
 	</ul>
 	<h4 >2。数组|对象操作</h4>
 	<ul class="detail" >
-		<li class='title'>$.inArray(value,array,[fromIndex])</li>
+		<li class='title'>$.inArray(value,array)</li>
 		<li class="tip">确定第一个参数在数组中的位置，从0开始计数(如果没有找到则返回 -1 )。</li>
 		<li class="title">$.each(obj,callback) </li>
 		<li class="tip">通用例遍方法，可用于例遍对象和数组。不同于例遍对象的 $().each() 方法，此方法可用于例遍任何对象。回调函数拥有两个参数：第一个为对象的成员或数组的索引，第二个为对应变量或内容。如果需要退出 each 循环可使回调函数返回 false，其它返回值将被忽略。与jquery的不同之处在于，过滤函数中的this是待过滤对象本身而不是jquery的window。</li>	
@@ -233,8 +249,29 @@
 		<li class='title'>$.ajaxForm(selector,[setting]) <span class="red">new</span> </li>
 		<li class="tip">新增了form表单ajax提交方法，selector为要提交的form表单的选择器，setting中紧紧提供了设置ajax中的回调函数部分，和data数据部分。本方法可上传文件,O(∩_∩)O, <span class="red">*</span>不过遗憾的是，移动设备ios5.0以下和android3.0以下是无法使用该方法的，桌面浏览器表现良好。</li>
 	</ul>
+	<h4 >5。browser对象 <Span class="red">*</span></h4>
+	<div class="tip">浏览器常规信息获取</div>
+	<ul class="detail" >
+		<li class="title">$.borwser <Span class="red">*</span></li>
+		<li class="tip">详情可以在控制台中查看各个属性，常规的有:qq,ie,chrome,safari,firefox,se360,qq,sougou等属性</li>
+	</ul>
+	<h4 >6。定时器<span class="red">*</span></h4>
+	<ul class="detail">
+		<li class="title">sjs.raf(frame,fn,[arguments...])<span class="red">new</span></li>
+		<li class="tip">raf是新的定时器对象，raf为用户自己定义循环事件（比如动画）提供了更基础的接口，sjs中的animate就是基于raf实现的。另外像canvas动画，dom动画均适合。想了很久还是开放出来,毕竟就我个人来说用的还是蛮多的，尤其是做canvas动画。<br>
+			声明对象不用new，该对象提供了两对对应的接口：start()开始动画与stop()停止动画；pause()暂停动画与resume()恢复暂停的动画。构造函数中的参数 frame:每秒的帧数，fn:动画函数,fn函数的参数第一个参数为fn当前运行的次数，其后接受参数arguments为自身参数，如果函数返回false那么循环将结束,函数中的上下文是动画对象本身。arguments:用户自定义的fn的参数列表
+		<div class='code'>
+			/**每秒25帧运行*/<br>
+			var raf1=new $.raf(25,function(cnt){<br>
+				if (cnt>10) {return false};<br>
+				console.log('run');<br>
+			});<br>
+			raf.start();//raf.stop();
+		</div>
+		</li>
+	</ul>
 </div>
 <hr>
-<footer>build by awen   71752352@qq.com || cczw2010@gmail.com</footer>
+<footer>build by awen ~ email:71752352@qq.com || cczw2010@gmail.com</footer>
 </body>
 </html>

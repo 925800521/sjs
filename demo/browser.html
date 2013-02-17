@@ -1,0 +1,20 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+     <script type="text/javascript" src="../sjs.js"></script>
+    <script type="text/javascript">
+   
+     </script>
+    <title>browser demo</title>
+</head>
+<body>
+<script type="text/javascript">
+    sjs.each(sjs.browser,function(k,v){
+        document.write(k+":"+v+"<br>");
+    });
+    document.write('<hr>');
+    document.write(navigator.userAgent+"<br>"+navigator.platform);
+</script>
+</body>
+</html>
