@@ -1,0 +1,67 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<script type="text/javascript" src="../test/jquery.min.js"></script>
+	<script type="text/javascript" src="../sjs.js"></script>
+	<title>filter demo</title>
+	<style type="text/css">
+	div{
+		border:5px solid #333;
+		width: 50px;
+		height: 50px;
+		display: inline-block;
+		margin: 10px;
+	}
+	</style>
+</head>
+<body>
+	<div id="id1"></div>
+	<div></div>
+	<div></div>
+	<div class='c1'></div>
+	<div class='c1'></div>
+	<div class='c1'></div>
+	<div class='c1'></div>
+	<div class='c1'></div>
+	<div></div>
+	<div></div>
+	<div class='c1'></div>
+	<div class='c2'></div>
+	<div class='c2'></div>
+	<div class='c2'></div>
+	<div class='c2'></div>
+	<div class='c2'></div>
+	<div class='c2'></div>
+	<div></div>
+	<div></div>
+<hr>
+	<ul  class='u1'>
+	  <li class='l1'>list item 1</li>
+	  <li class='l2'>list item 2
+	    <ul class='u1-1'>
+	      <li  class='l1-1'>list item 2-a
+	      	<span>*</span>
+	      </li>
+	      <li  class='l2-1'><div>
+				<span>list item 2-b</span>
+			  </div>
+		  </li>
+	    </ul>
+	  </li>
+	  <li class='l3'>list item 3</li>
+	  <li class='l4'>list item 4</li>
+	</ul>
+</body>
+<script type="text/javascript">
+	/**
+	 * test by awen
+	 * 71752352@qq.com
+	 */
+	 sjs('div').filter('div.c1').css('borderColor','#f30');
+	 sjs('div').filter(function(i){return i%2==0;}).css('backgroundColor','#c01');
+	 sjs('div').filter(sjs('div')[1]).css('backgroundColor','#333');
+	 sjs('div').filter(sjs('.c2')).css('borderColor','#00f');
+
+</script>
+</html>

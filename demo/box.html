@@ -1,0 +1,47 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<script type="text/javascript" src="../test/jquery.min.js"></script>
+	<script type="text/javascript" src="../sjs.js"></script>
+	<title>box demo</title>
+	<style type="text/css">
+	div{
+		border:1px solid #333;
+		width: 50px;
+		height: 50px;
+		display: inline-block;
+		margin: 10px;
+	}
+	.fix{
+		position: fixed;
+		right:100px;
+		bottom:100px;
+		background-color: #990;
+	}
+	.abs{
+		position: absolute;
+		top: 200px;
+		left:200px;
+		background-color: #033;
+	}
+	</style>
+</head>
+<body>
+	<p>请点击页面中的对象：<span id="info"></span></p>
+	<hr>
+	<div id="box"></div>
+	<div></div>
+	<div></div>
+	<div></div>
+	<div></div>
+	<div></div>
+	<div class='abs'></div>
+	<div class='fix'></div>
+</body>
+<script type="text/javascript">
+sjs('div').on('mouseover',function(e){
+	sjs('#info').html(sjs.JSON.stringify(sjs(this).getBox()));
+});
+</script>
+</html>

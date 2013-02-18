@@ -11,7 +11,7 @@
  		type=function(o){
 			return o!=undefined?(Object.prototype.toString.call(o)).slice(8,-1):'undefined';
 		},
-		RAF = W.requestAnimationFrame|| W.mozRequestAnimationFrame|| W.webkitRequestAnimationFrame|| W.msRequestAnimationFrame|| W.oRequestAnimationFrame|| function(callback) {setTimeout(callback, _f);},
+		RAF = W.requestAnimationFrame|| W.mozRequestAnimationFrame|| W.webkitRequestAnimationFrame|| W.msRequestAnimationFrame|| W.oRequestAnimationFrame|| function(callback) {setTimeout(callback, 1000/60);},
 		/*基础工具类*/
 		UT={
 			noConflict:function(){
@@ -77,7 +77,7 @@
 				}
 			},
 			grep:function(o,c,s){
-				var ret=[],rs=s===true?false:true;
+				var ret=new o.constructor,rs=s===true?false:true;
 				if(o&&c) {
 					sjs.each(o,function(i,n){
 						if(c.call(o,n,i)===rs){
@@ -88,7 +88,9 @@
 				return ret;
 			},
 			merge:function(f,s){
-				return f=f.concat(s);
+				var args=[f.length,0].concat(s);
+				Array.prototype.splice.apply(f,args);
+				return f;
 			},
 			map:function(o,f){
 				if (o&&f) {
@@ -110,22 +112,13 @@
 				if (Array.prototype.indexOf) {
 					  return Array.prototype.indexOf.call(o,v);  
 				}else{
-					for (var i=i==undefined?0:i,l=o.length; i < l; i++) {
+					for (var i=0,l=o.length; i < l; i++) {
 						if (o[i]==v) {return i}
 					}
 				}
 				return -1;
 			},
-			unique:function(o){
-				var j={},r=[];
-				for (var i = 0; i < o.length; i++) {
-					j[o[i]]=o[i];
-				}
-				sjs.each(j,function(n,i){
-					r.push(i);
-				});
-				return r;
-			},
+			unique:uniqd,
 			/**从数组或者对象中移除*/
 			remove:function(o,k,isv){
 				var ik=k;
@@ -149,7 +142,7 @@
 				return o;
 			},
 			/**json*/
-			JSONS:{
+			JSON:{
 				parse:function(d){
 					if ( typeof d !== "string" || !d ) {  
 		        		return null;  
@@ -263,17 +256,18 @@
 			}
 		},
 		//构建sjs对象
-		sjs=function(s){return new sjs.fn.init(s);};
+		sjs=function(s,cxt){return new sjs.fn.init(s,cxt);};
 		//对象原型
 		sjs.fn=sjs.prototype={
 			constructor: sjs,
-			selector: "",
+			selector:'',
+			sjs:'sjs',
 			length: 0,
-			init:function(s){
-				if (W==this) {return new sjs(s)};
-				if (!s) {
-					return this;
-				}
+			init:function(s,cxt){
+				if (W==this) {return new sjs(s,cxt)};
+				if (!s) {return this;}
+				//是sjs对象则返回原sjs对象
+				if (isS(s)) {return s;};
 				/**如果是函数则为ready*/
 				if (sjs.isFunction(s)) {
 					document.addEventListener("DOMContentLoaded", function(e) {
@@ -287,12 +281,17 @@
 					//dom对象的唯一标志
 					id(s);
 				}
+				//doms数组
+				if (s.length!=undefined) {
+					UT.merge(this,s);
+				}
 				// sjs(string)
 				if ( typeof s === "string" ) {
+					var _r=cxt?cxt:D;
 					if ( s.charAt(0) === "<" && s.charAt( s.length - 1 ) === ">" && s.length >= 3 ) {
 						//暂时不处理html代码
 					} else {
-						var doms=D.querySelectorAll(s);
+						var doms=_r.querySelectorAll(s);
 						this.length = doms.length;
 						for (var i = 0,len=doms.length; i<len; i++) {
 							id(doms[i]);
@@ -303,8 +302,11 @@
 				}
 				return this;
 			},
+			size:function(){
+				return this.length;
+			},
 			get:function(i){
-				var gs=Array.prototype.slice.call(this,0,this.length);
+				var gs=Array.prototype.slice.call(this);
 				return i==undefined?gs:gs[i];
 			},
 			index:function(){
@@ -357,13 +359,40 @@
 			}
 			return to;
 		}
-		///////////////////////////////////sjs对象扩展
+		///////////////////////////////////常用函数
+		//常规数组去重
+		function uniq(o){
+			var j={},r=[];
+			for (var i = 0; i < o.length; i++) {
+				j[o[i]]=o[i];
+			}
+			sjs.each(j,function(n,i){
+				r.push(i);
+			});
+			return r;
+		}
+		//dom数组去重
+		function uniqd(o){
+			var ret = [], done = {},i=0,l=o.length;
+			for(;i<l;i++){
+				var d=o[i],j=id(d);
+				if (!done[j]) {
+					done[j]=true;
+					ret.push(d);
+				};
+			}
+			return ret;
+		}
+		//判断是否sjs对象
+		function isS(o){
+			return o.constructor==sjs;
+		}
 		//获取dom对象的唯一标志
 		function id(d){
 			return d._hash?d._hash:(d._hash=UT.uniqueId());
 		}
 		//将CSS属性名转换成驼峰式
-		function camelize(s) {
+		function cne(s) {
 		 return s.replace(/-[a-z]/gi,function (c) {
 		  return c.charAt(1).toUpperCase();
 		 });
@@ -411,6 +440,23 @@
 					delete _domdatas[hash];
 				}
 			}
+		}
+		/**借用jquery的，挺精简的
+		 * 从一个元素出发，迭代检索某个方向上的所有元素并记录，直到与遇到document对象或遇到until匹配的元素
+		 * 迭代条件（简化）：cur.nodeType !== 9 && !sjs( cur ).is( until )
+		 * elem	起始元素
+		 * dir	迭代方向，可选值（Node 对象的属性）：如parentNode nextSibling previousSibling
+		 * until	选择器表达式，如果遇到until匹配的元素，迭代终止
+		 */
+		function dir(elem,dir,until){
+			var matched = [],cur = elem[ dir ]; 
+			while ( cur && cur.nodeType !== 9 && (until === undefined || cur.nodeType !== 1 || !sjs( cur ).is( until )) ) {
+				if ( cur.nodeType === 1 ) {
+					matched.push( cur );
+				}
+				cur = cur[dir];
+			}
+			return matched;
 		}
 		//ajax回调函数绑定
 		function ajaxcall(xhr,s){
@@ -546,7 +592,7 @@
 	 		css:function(a,b){
 	 			if (a==undefined||this.length==0) {return undefined};
 	 			if (sjs.isString(a)) {
-	 				var isf=sjs.isFunction(b),a=camelize(a);
+	 				var isf=sjs.isFunction(b),a=cne(a);
 	 				return b==undefined?gc(this[0],a):this.each(function(d,i){
 	 					var v=isf?(b.call(this,i,gc(this,a))):b;
 	 					v=sjs.isNumeric(v)?(v+'px'):v;
@@ -556,7 +602,7 @@
 	 			if (sjs.isPlainObject(a)) {
 	 				var ins=this;
 	 				sjs.each(a,function(k,v){
-	 					k=camelize(k);
+	 					k=cne(k);
 	 					ins.css(k,v);
 	 				});
 	 			}
@@ -639,19 +685,23 @@
 	 			});
 	 			return r;
 	 		},
-	 		each:function(fn){
-	 			for (var i = 0; i <this.length; i++) {
-	 				if(fn.call(this[i],this[i],i)===false){
-	 					return this;
-	 				}
+	 		/**r参数判断是否反向遍历*/
+	 		each:function(fn,r){
+	 			if (r===true) {
+	 				for (var i = this.length-1; i >=0; i--) {
+		 				if(fn.call(this[i],this[i],i)===false){
+		 					return this;
+		 				}
+		 			}
+	 			}else{
+	 				for (var i = 0; i <this.length; i++) {
+		 				if(fn.call(this[i],this[i],i)===false){
+		 					return this;
+		 				}
+		 			}
 	 			}
 	 			return this;
 	 		},
-	 		remove:function(){
-	 			return this.each(function() {
-						this.parentNode != null && this.parentNode.removeChild(this);
-				});
-			},
 			addClass:function(c){
 				if (c==undefined||this.length==0) {return this};
 				var cs=sjs.isFunction(c)?null:ba(c);
@@ -717,7 +767,86 @@
 				i=i<0?this.length+i:i;
 				return sjs(this.get(i));
 			},
+			hasClass:function(c){
+				var r=false;
+				this.each(function(d){
+ 					return !(r=hc(d,c));
+				});
+				return r;
+			},
+			filter:function(p){
+				var isf=sjs.isFunction(p),ls=!isf?sjs(p):null;
+				for (var i = this.length - 1; i >= 0; i--) {
+					if ((isf&&!p.call(this[0],i)) || (ls&&sjs.inArray(this[i],ls)<0)) {
+						Array.prototype.splice.call(this,i,1);
+					}
+				}
+				return this;
+			},
+			not:function(p){
+				var isf=sjs.isFunction(p),ls=!isf?sjs(p):null;
+				for (var i = this.length - 1; i >= 0; i--) {
+					if ((isf&&p.call(this[0],i)) || (ls&&sjs.inArray(this[i],ls)>-1)) {
+						Array.prototype.splice.call(this,i,1);
+					}
+				}
+				return this;
+			},
+			slice:function(s,e){
+				var _s=s==undefined?0:s<0?this.length+s:s,_e=e?e:this.length;
+				for (var i = this.length - 1; i >= 0; i--) {
+					if (i>=_e||i<_s) {
+						Array.prototype.splice.call(this,i,1);
+					}
+				}
+				return this;
+			},
+			is:function(p){
+				return this.filter(p).length>0;
+			},
+			has:function(p){
+				var ins=this;
+				if (sjs.isString(p)) {
+					return this.filter(function(i){
+						return sjs(p,ins[i]).length>0;
+					});
+				}else{
+					if (p.sjs) {p=p[0];}
+					return this.filter(function(i){
+						var ds=sjs('*',ins[i]).get();
+						console.log(sjs.inArray(p,ds));
+						return sjs.inArray(p,ds)>-1;
+					});
+				}
+			},
+			//查找
+			parentsUntil:function(s){
+				var ps=[],i=0,l=this.length;
+				for(;i<l;i++){
+					sjs.merge(ps,dir(this[i],'parentNode',s));
+				}
+				return sjs(uniqd(ps));
+			},
+			parent:function(s){
+
+			},
+			// find:function(){},
+			// children:function(){},
+			// siblings:function(){},
+			
+			// 串联
+			//add:function(){},
+			
 			//文档处理
+			remove:function(){
+	 			return this.each(function() {
+						this.parentNode != null && this.parentNode.removeChild(this);
+				});
+			},
+			// append:function(){},
+			// replace:function(){},
+			// clone:function(){},
+			// empty:function(){},
 
 	 	},
 	 	//ajax
@@ -747,7 +876,7 @@
 					xhr=new XMLHttpRequest,url=url.indexOf('?')>-1?url+'&':url+'?',postd=_s.data;
 					url+=_s.cache?'':'_t='+_t;
  					if ((_s.type).toLowerCase()=='get') {
-						url+=sjs.JSONS.toQuery(_s.data);
+						url+=sjs.JSON.toQuery(_s.data);
 						postd=null;
 					}
 					if (_s.dataType=='blod' || _s.dataType=='arraybuffer') {
@@ -820,7 +949,7 @@
 	 	/**浏览器扩展*/
 	 	gwe=function(p){
 			try {
-	            if (window.external && window.external[p]) {
+	            if (W.external && W.external[p]) {
 	                var f=W.external[p];
 	                return UT.isFunction(f)?f():f;
 	            }
@@ -991,6 +1120,8 @@
 			stop:function(cq){
 				cq=cq===false?false:true;
 				this.each(function(d){
+					var idx=id(d);
+					if (!_AS[idx]) {return false;};
 					if (cq) {
 						//中断
 						var s=d.style;
@@ -998,16 +1129,16 @@
 							d.style[s[i]]=gc(d,s[i]);
 						}
 					}else{
-						var as=_AS[id(d)],l=as?as.stacks.length:0,p={};
+						var as=_AS[idx],l=as?as.stacks.length:0,p={};
 						for (var i = 0; i <l; i++) {
 							if (as.stacks[i].tran) {
 								sjs.extend(p,as.stacks[i].tran)
 							}
 						}
-						p[ntp]='none';
 						sjs(d).css(p);
 					}
-					delete _AS[id(d)];
+					sjs(d).css(_apre,'');
+					_AS[idx].stacks=[];
 				});
 				return this;
 			},
