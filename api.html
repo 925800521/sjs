@@ -39,7 +39,7 @@
 <p>
 	　　如果不太特殊说明，表明该接口与jquery用法相同，具体示例与说明请查阅jquery文档。
 	<div class="pin40">
-		<span class="red">*</span> 该api与jquery是有所不同的，是扩展或者精简了的接口。但不影响使用
+		<span class="red">*</span> 该api与jquery略有不同，是扩展或者精简了的接口。但不影响基本使用
 		<br><span class="red">new</span> 新增接口
 	</div>
 
@@ -60,24 +60,30 @@
 <div class="indent">
 	<h4 >1。sjs对象核心函数</h4>
 	<ul class="detail" >
-		<li class="title">sjs(function($){}) </li>
-		<li class="tip">dom加载完成后的执行函数,函数内部可以安全的使用$符号作为sjs的别名</li>
 		<li class="title">sjs.noConflict() </li>
 		<li class="tip">多库共存，运行这个函数将变量$的控制权让渡给sjs载入的前一个实现它的那个库</li>
+		<li class="title">sjs(function($){}) </li>
+		<li class="tip">dom加载完成后的执行函数,函数内部可以安全的使用$符号作为sjs的别名</li>
+		<li class="title">sjs(html,[ownerDocument]) </li>
+		<li class="tip">根据提供的原始 HTML 标记字符串，动态创建由 jQuery 对象包装的 DOM 元素。同时设置一系列的属性、事件等。ownerDocument代表创建DOM元素所在的文档	</li>
 		<li class="title">sjs.extend(object) </li>
 		<li class="tip">扩展sjs对象本身</li>
 		<li class="title">sjs.fn.extend(object) </li>
 		<li class="tip">扩展 sjs 元素集来提供新的方法（通常用来制作插件）</li>
+
+
 		<li class="title">each(callback,[reverse]) <span>*</span> </li>
 		<li class="tip">以每一个匹配的元素作为上下文来执行一个函数。返回 'false' 将停止循环 (就像在普通的循环中使用 'break')。返回 'true' 跳至下一个循环(就像在普通的循环中使用'continue')。reverse指定遍历是否反序进行
 			<div class="code">
 				sjs('div').each(function(dom,i){ /*do somthing*/ });
 			</div>
 		</li>
-		<li class="title">length</li>
-		<li class="tip">当前sjs对象中元素的个数</li>
 		<li class="title">selector</li>
 		<li class="tip">记录sjs对象的原始选择器</li>
+		<li class="title">length</li>
+		<li class="tip">当前sjs对象中元素的个数</li>
+		<li class="title">size()</li>
+		<li class="tip">当前sjs对象中元素的个数，同length</li>
 		<li class="title">get([index])</li>
 		<li class="tip">取得其中一个匹配的dom元素。 如果没有参数取得所有匹配的 DOM 元素集合</li>
 		<li class="title">index() <span class="red">*</span></li>
@@ -147,13 +153,28 @@
 
 	</ul>
 	<h4 >7。查找</h4>
-	<div></div>
+	<div>扩展了参数的范围，过滤参数不仅仅是表达式</div>
 	<ul>
-		<li class="title">parentsUntil(([exp|ele|obj])</li>
-		<li class="tip">查找当前元素的所有的父辈元素，直到遇到匹配的那个元素为止</li>
-	</ul>
+		<li class="title">parentsUntil([exp|ele|obj]][,fil])</li>
+		<li class="tip">查找当前元素的所有的父辈元素，直到遇到匹配的那个元素为止,fil为过滤器，内部会调用is来匹配，参数类型见is()</li>
+		<li class="title">parents([exp|ele|obj]])</li>
+		<li class="tip">查找当前元素的所有的父辈元素，可以通过一个过滤参数进行筛选。</li>
+		<li class="title">parent([exp|ele|obj])</li>
+		<li class="tip">取得一个包含着所有匹配元素的唯一父元素的元素集合。你可以使用可选的表达式来筛选。</li>
+		<li class="title">closest(expr)<span class="red">*</span></li>
+		<li class="tip">closest会首先检查当前元素是否匹配，如果匹配则直接返回元素本身。如果不匹配则向上查找父元素，一层一层往上，直到找到匹配选择器的元素。如果什么都没找到则返回一个空的jQuery对象。 <span class="red">*</span>本方法只支持字符选择器参数，另外jQuery貌似没有排除重复元素，这里做了唯一处理</li>
+		<li class="title">find(expr) <span class="red">*</span> </li>
+		<li class="tip">搜索所有与指定表达式匹配的元素。这个函数是找出正在处理的元素的后代元素的好方法。 <span class="red">*</span>本方法只支持字符选择器参数，其它的去掉了。因为在我的生产过程中还真没用过ele或者obj，还耗资源</li>
+		<li class="title">children(expr)</li>
+		<li class="tip">搜索所有与指定表达式匹配的元素。这个函数是找出正在处理的元素的后代元素的好方法。</li>
 
-	<h4 >8。事件</h4>
+	</ul>
+	<h4 >8。串联</h4>
+	<ul>
+		<li class="title">add(expr|ele|html|obj)</li>
+		<li class="tip">把与表达式匹配的元素添加到jQuery对象中。这个函数可以用于连接分别与两个表达式匹配的元素结果集。</li>
+	</ul>
+	<h4 >9。事件</h4>
 	<ul class="detail" >
 		<li class="title">on(type,[data],fn)<span class="red">*</span></li>
 		<li class="tip">新的利用事件委托机制实现的事件绑定行为，不再像jquery一样提供selector参数。，回调函数的event.data来获取传入的data值，event.firecnt来获取执行的次数，另外如果函数返回false，那么函数将自动解除绑定，可定制性更高</li>
@@ -168,7 +189,7 @@
 		<li class="title"><del>unbind(type,[data|fn]])</del></li>
 		<li class="tip">off的别名，只是为了兼容预留</li>
 	</ul>
-	<h4 >9。动画</h4>
+	<h4 >10。动画</h4>
 	<ul class="detail" >	
 		<li class="title">animate(params,[speed],[easing],[fn])</li>
 		<li class="tip">与jquery的用法基本一样，如果你想用animate(params,options)的方式调用，那么参数只提供了speed，easing,fn三个键值</li>
@@ -219,7 +240,7 @@
 		<li class="title">$.map(arr|obj,callback)</li>
 		<li class="tip">将一个数组中的元素转换到另一个数组中。作为参数的转换函数会为每个数组元素调用，而且会给这个转换函数传递一个表示被转换的元素作为参数。转换函数可以返回转换后的值、null（删除数组中的项目）或一个包含值的数组，并扩展至原始数组中</li>
 		<li class="title">$.remove(arr|obj,k|v,isval)<span class="red">new</span></li>
-		<li class="tip">从对象或者数组中删除给定的键或者值，第三个参数确定第二个参数的类型，true为值，默认为键.<span class="red">注意，别在数组正向循环中使用它，否则索引会混乱</span></li>
+		<li class="tip">从对象或者数组中删除给定的键或者值，第三个参数确定第二个参数的类型，true为值，默认为键</li>
 	</ul>
 	<h4 >3。JSON对象<span class="red">new</span></h4>
 	<div class="tip">将所有的json操作给整合在了一起，本来用html5的parse stringify就够了，谁知道天杀的safari3.2居然不支持，我晕。还要单独实现,当然如果开发中不考虑不支持的情况，请尽情使用window的原生JSON操作API</div>

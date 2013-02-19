@@ -4,7 +4,7 @@
 	<meta charset="UTF-8">
 	<script type="text/javascript" src="../test/jquery.min.js"></script>
 	<script type="text/javascript" src="../sjs.js"></script>
-	<title>filter demo</title>
+	<title>过滤 demo</title>
 	<style type="text/css">
 	div{
 		border:5px solid #333;
@@ -58,10 +58,27 @@
 	 * test by awen
 	 * 71752352@qq.com
 	 */
-	 sjs('div').filter('div.c1').css('borderColor','#f30');
-	 sjs('div').filter(function(i){return i%2==0;}).css('backgroundColor','#c01');
-	 sjs('div').filter(sjs('div')[1]).css('backgroundColor','#333');
-	 sjs('div').filter(sjs('.c2')).css('borderColor','#00f');
+	//filter
+	sjs('div').filter('div.c1,div.c2').css('borderColor','#f30');
+	// sjs('div').filter(function(i){return i%2==0;}).css('backgroundColor','#c01');
+	// sjs('div').filter(sjs('div')[1]).css('backgroundColor','#333');
+	// sjs('div').filter(sjs('.c2')).css('borderColor','#00f');
+	
+	//not
+	sjs('div').not('.c1,.c2').css('borderColor','#0f0');
+	// //has
+	sjs('div').has('span').animate({'borderColor':'#ff0'},'slow');
+	// sjs('ul').has(sjs('.l2-1')).css({'borderColor':'#ff0'});
+	//sjs('ul').has(sjs('.l2-1')[0]).css({'borderColor':'#ff0'});
+
+	//is
+	if(sjs('div').is('c2')){/*....*/}
+
+	//eq
+	sjs('div').eq(1).css('background-color','#ff0');
+
+	//slice
+	sjs('li').slice(2).css('color','#449');
 
 </script>
 </html>

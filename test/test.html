@@ -1,0 +1,67 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<script type="text/javascript" src="jquery.min.js"></script>
+	<script type="text/javascript" src="../sjs.js"></script>
+	<title>test</title>
+</head>
+<body>
+	<ul  class='u1'>
+		<li class='l1'>list item 1</li>
+		<li class='l2'>list item 2
+			<ul class='u1-1'>
+				<li  class='l1-1'>list item 2-a
+					<span>span</span>
+				</li>
+				<li  class='l2-1'>
+					<div>
+						div
+						<span>span</span>
+					</div>
+				</li>
+			</ul>
+		</li>
+		<li class='l3'>list item 3</li>
+		<li class='l4'>list item 4</li>
+	</ul>
+	<script type="text/javascript">
+	/**
+	 * test by awen
+	 * 71752352@qq.com
+	 */
+		var cnts=[10,100,1000],
+			sels=['div','#id1','.test','div.test','div[id=id2]','div:nth-child(3)'];
+
+ 	
+ 			for (var j = 0,l=cnts.length; j <l; j++) {
+ 				console.group("运行次数="+cnts[j]);
+ 				////////////设置数据//////////////////////
+ 				//sjs
+ 				console.time('sjs');
+ 				for (var m=0,n=cnts[j]; m <n; m++) {
+ 					//sjs('li').add('span');
+ 					// sjs('li').children('span');
+ 					// sjs('li').find('span');
+ 					// sjs('span').parentsUntil('li');
+ 					//sjs('span').parents('li');
+ 					sjs('span').closest('li');
+ 				}
+ 				console.timeEnd('sjs');
+				//jquery
+ 				console.time('jQuery');
+ 				for (var m=0,n=cnts[j]; m <n; m++) {
+ 					//jQuery('li').add('span');
+ 					//jQuery('li').children('span');
+ 					// jQuery('li').find('span');
+ 					// jQuery('span').parentsUntil('li');
+ 					//jQuery('span').parents('li');
+ 					jQuery('span').closest('li');
+ 				}
+ 				console.timeEnd('jQuery');
+ 				 
+ 				console.groupEnd();
+ 			};
+	</script>
+</body>
+</html>

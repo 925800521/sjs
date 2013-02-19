@@ -8,6 +8,7 @@
 		wl=W.location,
 		ua=wn.userAgent.toLowerCase(),
 		av=wn.appVersion,
+		AP=Array.prototype,
  		type=function(o){
 			return o!=undefined?(Object.prototype.toString.call(o)).slice(8,-1):'undefined';
 		},
@@ -79,7 +80,7 @@
 			grep:function(o,c,s){
 				var ret=new o.constructor,rs=s===true?false:true;
 				if(o&&c) {
-					sjs.each(o,function(i,n){
+					M.each(o,function(i,n){
 						if(c.call(o,n,i)===rs){
 							ret.push(n);
 						}
@@ -89,7 +90,7 @@
 			},
 			merge:function(f,s){
 				var args=[f.length,0].concat(s);
-				Array.prototype.splice.apply(f,args);
+				AP.splice.apply(f,args);
 				return f;
 			},
 			map:function(o,f){
@@ -109,8 +110,8 @@
 				return o;
 			},
 			inArray:function(v,o){
-				if (Array.prototype.indexOf) {
-					  return Array.prototype.indexOf.call(o,v);  
+				if (AP.indexOf) {
+					  return AP.indexOf.call(o,v);  
 				}else{
 					for (var i=0,l=o.length; i < l; i++) {
 						if (o[i]==v) {return i}
@@ -214,7 +215,7 @@
 			raf:function(frame,fn) {
 				//run 动画状态  0初始 1运动 2暂停 3停止
 				var st=new Date().getTime(),_f=Math.ceil(1000/frame),run=0,
-					cnt=0,args=Array.prototype.slice.call(arguments,2);args.unshift(cnt);
+					cnt=0,args=AP.slice.call(arguments,2);args.unshift(cnt);
 				instance=this;
 	 			function go(){
 	 				if (run<2) {
@@ -252,71 +253,72 @@
 	 			this.stop=function(){
 	 				run=3;
 				}
-				return this;
 			}
 		},
 		//构建sjs对象
-		sjs=function(s,cxt){return new sjs.fn.init(s,cxt);};
+		M=function(s,cxt){return new M.fn.init(s,cxt);};
 		//对象原型
-		sjs.fn=sjs.prototype={
-			constructor: sjs,
+		M.fn=M.prototype={
+			constructor: M,
 			selector:'',
 			sjs:'sjs',
 			length: 0,
 			init:function(s,cxt){
-				if (W==this) {return new sjs(s,cxt)};
-				if (!s) {return this;}
+				if (W==this) {return new M(s,cxt)};
 				//是sjs对象则返回原sjs对象
 				if (isS(s)) {return s;};
-				/**如果是函数则为ready*/
-				if (sjs.isFunction(s)) {
-					document.addEventListener("DOMContentLoaded", function(e) {
-						s.call(W,sjs);
-					});
-				}
-				// sjs(DOMElement)
-				if (s.nodeType) {
-					this[0] = s;
-					this.length = 1;
-					//dom对象的唯一标志
-					id(s);
-				}
-				//doms数组
-				if (s.length!=undefined) {
-					UT.merge(this,s);
-				}
-				// sjs(string)
-				if ( typeof s === "string" ) {
-					var _r=cxt?cxt:D;
-					if ( s.charAt(0) === "<" && s.charAt( s.length - 1 ) === ">" && s.length >= 3 ) {
-						//暂时不处理html代码
-					} else {
-						var doms=_r.querySelectorAll(s);
-						this.length = doms.length;
-						for (var i = 0,len=doms.length; i<len; i++) {
-							id(doms[i]);
-							this[i]=doms[i];
+				if (s) {
+					/**如果是函数则为ready*/
+					if (M.isFunction(s)) {
+						document.addEventListener("DOMContentLoaded", function(e) {
+							s.call(W,sjs);
+						});
+					}
+					// M(DOMElement)
+					if (s.nodeType) {
+						this[0] = s;
+						this.length = 1;
+						//dom对象的唯一标志
+						id(s);
+					}
+					//doms数组
+					if (UT.isArray(s)) {
+						UT.merge(this,s);
+					}
+					// M(string)
+					if ( typeof s === "string" ) {
+						var _r=cxt?cxt:D;
+						if ( s.charAt(0) === "<" && s.charAt( s.length - 1 ) === ">" && s.length >= 3 ) {
+							var tmp=_r.createElement('div');
+								tmp.innerHTML=s;
+							return M(tmp.firstChild);
+						} else {
+							var doms=_r.querySelectorAll(s);
+							this.length = doms.length;
+							for (var i = 0,len=this.length; i<len; i++) {
+								id(doms[i]);
+								this[i]=doms[i];
+							}
+							this.selector=s;
 						}
-						this.selector=s;
 					}
 				}
-				return this;
 			},
 			size:function(){
 				return this.length;
 			},
 			get:function(i){
-				var gs=Array.prototype.slice.call(this);
+				var gs=AP.slice.call(this);
 				return i==undefined?gs:gs[i];
 			},
 			index:function(){
 				var d=this[0],cs=d.parentNode.children;
-				return sjs.inArray(d,cs);
+				return M.inArray(d,cs);
 			}
 		}
-		sjs.fn.init.prototype = sjs.fn;
+		M.fn.init.prototype = M.fn;
 		//主要扩展方法
-		sjs.extend=sjs.fn.extend=function(){
+		M.extend=M.fn.extend=function(){
 			var to=arguments[0]||{},options,len=arguments.length,deep=false,ci=0,src,copy;
 			//第一个参数如果是boolean型的话，则代表是否深度复制，扩充对象为第二个参数
 			if(typeof to === "boolean") {
@@ -350,7 +352,7 @@
 				 			if (UT.isArray(copy)) {
 				 				src= src && UT.isPlainObject(src) ? src : [];
 				 			}
-				 			to[key] = sjs.extend( deep, src, copy );
+				 			to[key] = M.extend( deep, src, copy );
 				 		}else{
 				 			to[key]=copy;
 				 		}
@@ -366,7 +368,7 @@
 			for (var i = 0; i < o.length; i++) {
 				j[o[i]]=o[i];
 			}
-			sjs.each(j,function(n,i){
+			M.each(j,function(n,i){
 				r.push(i);
 			});
 			return r;
@@ -385,7 +387,7 @@
 		}
 		//判断是否sjs对象
 		function isS(o){
-			return o.constructor==sjs;
+			return o&&o.sjs!=undefined;
 		}
 		//获取dom对象的唯一标志
 		function id(d){
@@ -409,7 +411,7 @@
 		//将数组或者字符串 统一成数组
 		function ba(s,b){
 			b=b?b:' ';
-			return s==undefined?s:sjs.isArray(s)?s:s.split(b);
+			return s==undefined?s:M.isArray(s)?s:s.split(b);
 		}
 		function dc(d,c){
 			if (c&&hc(d,c)) {
@@ -441,17 +443,20 @@
 				}
 			}
 		}
-		/**借用jquery的，挺精简的
+		/**借用jquery的，挺精简的,扩展了个f参数过滤器
 		 * 从一个元素出发，迭代检索某个方向上的所有元素并记录，直到与遇到document对象或遇到until匹配的元素
-		 * 迭代条件（简化）：cur.nodeType !== 9 && !sjs( cur ).is( until )
-		 * elem	起始元素
-		 * dir	迭代方向，可选值（Node 对象的属性）：如parentNode nextSibling previousSibling
+		 * 迭代条件（简化）：cur.nodeType !== 9 && !M( cur ).is( until ) 
+		 * elem		起始元素
+		 * dir		迭代方向，可选值（Node 对象的属性）：如parentNode nextSibling previousSibling
 		 * until	选择器表达式，如果遇到until匹配的元素，迭代终止
+		 * f 		过滤器，会调用is来判断元素是否匹配
+		 * only 	是否只返回第一个符合要求的
 		 */
-		function dir(elem,dir,until){
-			var matched = [],cur = elem[ dir ]; 
-			while ( cur && cur.nodeType !== 9 && (until === undefined || cur.nodeType !== 1 || !sjs( cur ).is( until )) ) {
-				if ( cur.nodeType === 1 ) {
+		function dir(elem,dir,until,f,only){
+			var matched = [],cur = elem[ dir ];
+			while ( cur && cur.nodeType !== 9 && (until === undefined || cur.nodeType !== 1 || !M( cur ).is( until ))) {
+				if ( cur.nodeType === 1 && (!f || M(cur).is(f))) {
+					if (only) {return cur;}
 					matched.push( cur );
 				}
 				cur = cur[dir];
@@ -528,12 +533,12 @@
 	 		},
 	 		/**删除数据,name可以使某个key，也可以使key数组，或者空格分开的key串*/
 	 		removeData:function(name){
-	 			if (sjs.isString(name) && !sjs.isEmptyString(name)) {
+	 			if (M.isString(name) && !M.isEmptyString(name)) {
 	 				name=name.split(" ");
 	 			}
 	 			return this.each(function(d){
- 					if (sjs.isArray(name)) {
- 						sjs.each(name,function(i,n){
+ 					if (M.isArray(name)) {
+ 						M.each(name,function(i,n){
  							dd(d,n)
 		 				});
 		 			}else{
@@ -548,7 +553,7 @@
 	 			if (!s) {
 	 				return this[0].innerHTML;
 	 			}
-	 			var h=sjs.isString(s)?s:null,isfunc=sjs.isFunction(s);
+	 			var h=M.isString(s)?s:null,isfunc=M.isFunction(s);
 	 			return this.each(function(d,i){
 	 				if (isfunc) {
 	 					h=s.call(this,i,this.innerHTML);
@@ -559,7 +564,7 @@
 	 		},
 	 		val:function(s){
 	 			return s==undefined?(this[0].value||''):this.each(function(d,i){
-	 				if (sjs.isFunction(s)) {
+	 				if (M.isFunction(s)) {
 	 					var r=s.call(d,i,d.value);
 	 					if (r!=undefined) {
 	 						d.value=r;
@@ -572,7 +577,7 @@
 	 		text:function(s){
 	 			if (s) {
 	 				return this.each(function(d,i){
-	 					if (sjs.isFunction(s)) {
+	 					if (M.isFunction(s)) {
 	 						var r=s.call(d,i,d.textContent);
 	 						if (r!=undefined) {
 	 							d.textContent=r;
@@ -591,17 +596,17 @@
 	 		},
 	 		css:function(a,b){
 	 			if (a==undefined||this.length==0) {return undefined};
-	 			if (sjs.isString(a)) {
-	 				var isf=sjs.isFunction(b),a=cne(a);
+	 			if (M.isString(a)) {
+	 				var isf=M.isFunction(b),a=cne(a);
 	 				return b==undefined?gc(this[0],a):this.each(function(d,i){
 	 					var v=isf?(b.call(this,i,gc(this,a))):b;
-	 					v=sjs.isNumeric(v)?(v+'px'):v;
+	 					v=M.isNumeric(v)?(v+'px'):v;
 	 					d.style[a]=v;
 	 				});
 	 			}
-	 			if (sjs.isPlainObject(a)) {
+	 			if (M.isPlainObject(a)) {
 	 				var ins=this;
-	 				sjs.each(a,function(k,v){
+	 				M.each(a,function(k,v){
 	 					k=cne(k);
 	 					ins.css(k,v);
 	 				});
@@ -613,7 +618,7 @@
 	 			if (a) {
 	 				if (b) {
 	 					//两个参数
-	 					if (sjs.isFunction(b)) {
+	 					if (M.isFunction(b)) {
 	 						this.each(function(d,i){
 	 							var v=d.getAttribute(a),r=b.call(d,i,v);
 	 							if (r!=undefined) {
@@ -627,11 +632,11 @@
 	 					}
 	 				}else{
 	 					//一个参数
-	 					if (sjs.isString(a)) {
+	 					if (M.isString(a)) {
 	 						return this[0].getAttribute(a);
-	 					}else if (sjs.isPlainObject(a)) {
+	 					}else if (M.isPlainObject(a)) {
 	 						this.each(function(d){
-	 							sjs.each(a,function(k,v){
+	 							M.each(a,function(k,v){
 	 								d.setAttribute(k,v);
 	 							})
 	 						})
@@ -679,7 +684,7 @@
 	 		inBox:function(x,y){/**x，y均相对于浏览器窗口，event可用clientX,clientY*/
 	 			var r=false,x=parseInt(x),y=parseInt(y);
 	 			this.each(function(dom,i){
-	 				var b=sjs(this).getBox();
+	 				var b=M(this).getBox();
 	  				r=b.left<=x&&b.right>=x&&b.top<=y&&b.bottom>=y;
 	  				if (r==true) {return false};
 	 			});
@@ -704,9 +709,9 @@
 	 		},
 			addClass:function(c){
 				if (c==undefined||this.length==0) {return this};
-				var cs=sjs.isFunction(c)?null:ba(c);
+				var cs=M.isFunction(c)?null:ba(c);
 				return this.each(function(d,i){
-					var sc=sjs.trim(d.className);
+					var sc=M.trim(d.className);
 					if (cs==null) {
 						var cn=c.call(d,i,sc);
 						if (cn&&!hc(d,cn)) {
@@ -714,8 +719,8 @@
 						}
 					}
 					else{
-						sjs.each(cs,function(i,cn){
-							sc=sjs.trim(d.className);
+						M.each(cs,function(i,cn){
+							sc=M.trim(d.className);
 							if (cn&&!hc(d,cn)) {
 								d.className=sc+' '+cn;
 							}
@@ -725,10 +730,10 @@
 			},
 			removeClass:function(c){
 				if (this.length==0) {return this};
-				var cs=sjs.isFunction(c)?null:ba(c);
+				var cs=M.isFunction(c)?null:ba(c);
 				return this.each(function(d,i){
 					if (c==undefined) {return (d.className='');};
-					var sc=sjs.trim(d.className);
+					var sc=M.trim(d.className);
 					if (cs==null) {
 						var cn=c.call(d,i,sc);
 						if (cn&&hc(d,cn)) {
@@ -736,7 +741,7 @@
 						}
 					}
 					else{
-						sjs.each(cs,function(i,cn){
+						M.each(cs,function(i,cn){
 							dc(d,cn);
 						});
 					}
@@ -744,9 +749,9 @@
 			},
 			toggleClass:function(c){
 				if (c==undefined||this.length==0) {return this};
-				var cs=sjs.isFunction(c)?null:ba(c);
+				var cs=M.isFunction(c)?null:ba(c);
  				return this.each(function(d,i){
-					var sc=sjs.trim(d.className),cn='';
+					var sc=M.trim(d.className),cn='';
 					if (cs==null) {
 						if(cn=c.call(d,i,sc)){
 							if (hc(d,cn)) {dc(d,cn)}
@@ -754,8 +759,8 @@
 						}
 					}
 					else{
-						sjs.each(cs,function(i,ci){
-							sc=sjs.trim(d.className);
+						M.each(cs,function(i,ci){
+							sc=M.trim(d.className);
 							if (hc(d,ci)) {dc(d,ci)}
 							else{d.className=sc+' '+ci}
 						});
@@ -765,7 +770,7 @@
 			//筛选
 			eq:function(i){
 				i=i<0?this.length+i:i;
-				return sjs(this.get(i));
+				return M(this.get(i));
 			},
 			hasClass:function(c){
 				var r=false;
@@ -774,29 +779,25 @@
 				});
 				return r;
 			},
-			filter:function(p){
-				var isf=sjs.isFunction(p),ls=!isf?sjs(p):null;
+			//w如果为true的话，那么将返回不符合条件的元素，（默认返回符合条件的）
+			filter:function(p,w){
+				var isf=M.isFunction(p),ls=!isf?M(p):null;
 				for (var i = this.length - 1; i >= 0; i--) {
-					if ((isf&&!p.call(this[0],i)) || (ls&&sjs.inArray(this[i],ls)<0)) {
-						Array.prototype.splice.call(this,i,1);
+					if ((isf&&((!w&&!p.call(this[0],i))||(w&&p.call(this[0],i)))) || (ls&&((!w&&M.inArray(this[i],ls)<0)||(w&&M.inArray(this[i],ls)>-1)))) {
+						AP.splice.call(this,i,1);
 					}
 				}
 				return this;
 			},
+			//filter的反操作
 			not:function(p){
-				var isf=sjs.isFunction(p),ls=!isf?sjs(p):null;
-				for (var i = this.length - 1; i >= 0; i--) {
-					if ((isf&&p.call(this[0],i)) || (ls&&sjs.inArray(this[i],ls)>-1)) {
-						Array.prototype.splice.call(this,i,1);
-					}
-				}
-				return this;
+				return this.filter(p,true);
 			},
 			slice:function(s,e){
-				var _s=s==undefined?0:s<0?this.length+s:s,_e=e?e:this.length;
+				var _s=s==undefined?0:s<0?this.length+s:s,_e=e==undefined?this.length:e;
 				for (var i = this.length - 1; i >= 0; i--) {
-					if (i>=_e||i<_s) {
-						Array.prototype.splice.call(this,i,1);
+					if (i>=e && i<=s) {
+						AP.splice.call(this,i,1);
 					}
 				}
 				return this;
@@ -806,36 +807,76 @@
 			},
 			has:function(p){
 				var ins=this;
-				if (sjs.isString(p)) {
+				if (M.isString(p)) {
 					return this.filter(function(i){
-						return sjs(p,ins[i]).length>0;
+						return M(p,ins[i]).length>0;
 					});
 				}else{
 					if (p.sjs) {p=p[0];}
 					return this.filter(function(i){
-						var ds=sjs('*',ins[i]).get();
-						console.log(sjs.inArray(p,ds));
-						return sjs.inArray(p,ds)>-1;
+						var ds=M('*',ins[i]).get();
+						return M.inArray(p,ds)>-1;
 					});
 				}
 			},
 			//查找
-			parentsUntil:function(s){
+			parentsUntil:function(s,f){
 				var ps=[],i=0,l=this.length;
 				for(;i<l;i++){
-					sjs.merge(ps,dir(this[i],'parentNode',s));
+					M.merge(ps,dir(this[i],'parentNode',s,f));
 				}
-				return sjs(uniqd(ps));
+				return M(uniqd(ps));
 			},
 			parent:function(s){
-
+				var ps=[],i=0,l=this.length;
+				for(;i<l;i++){
+					var p=this[i].parentNode;
+					p&&(!s||M(p).is(s))&&ps.push(p);
+				}
+				return M(uniqd(ps));
 			},
-			// find:function(){},
-			// children:function(){},
+			//效率待优化
+			parents:function(s){
+				return this.parentsUntil(null,s);
+			},
+			//代码待检查
+			closest:function(s){
+				var ps=[];
+				for (var i = this.length - 1; i >= 0; i--) {
+					var d=this[i],p;
+					if (M(d).is(s)) {
+						ps.push(d);
+					}else{
+						p=dir(this[i],'parentNode',null,s,true);
+						p.nodeType&&ps.push(p);
+					}
+				}
+				return M(uniqd(ps));
+			},
+			find:function(s,c){
+				var r=[];
+				for (var i = this.length - 1; i >= 0; i--) {
+					var d=this[i],cs=d.querySelectorAll(s);
+					for (var j = cs.length - 1; j >= 0; j--) {
+						(!c||cs[j].parentNode==d)&&r.push(cs[j]);
+					};
+				}
+				return M(uniqd(r));
+			},
+			children:function(s){
+				var _s=!s?'*':s;
+  				return this.find(_s,true);
+			},
 			// siblings:function(){},
 			
 			// 串联
-			//add:function(){},
+			add:function(s){
+				var ins=this;
+				M(s).each(function(d){
+					AP.push.call(ins,d);
+				});
+				return M(uniqd(this));
+			},
 			
 			//文档处理
 			remove:function(){
@@ -871,12 +912,12 @@
 					error : null, 		// 请求失败似的函数句柄，并且传入一个XMLHttpRequest作为参数
 					complete : null 	// 请求结束后的函数句柄,不管成功或者失败，并且传入一个XMLHttpRequest作为参数
 				};
-				if (!sjs.isString(url)) {return false}
-				var _t=new Date().getTime(),_s=s?sjs.extend(_s,s):_s,
+				if (!M.isString(url)) {return false}
+				var _t=new Date().getTime(),_s=s?M.extend(_s,s):_s,
 					xhr=new XMLHttpRequest,url=url.indexOf('?')>-1?url+'&':url+'?',postd=_s.data;
 					url+=_s.cache?'':'_t='+_t;
  					if ((_s.type).toLowerCase()=='get') {
-						url+=sjs.JSON.toQuery(_s.data);
+						url+=M.JSON.toQuery(_s.data);
 						postd=null;
 					}
 					if (_s.dataType=='blod' || _s.dataType=='arraybuffer') {
@@ -889,7 +930,7 @@
 					xhr.setRequestHeader("Content-Type", _s.contentType+"; charset="+_s.charset+"");
 			        xhr.send(postd);
 				}else{
-					if (sjs.isFunction(_s.error)) {_s.error('ajax不被支持！')}
+					if (M.isFunction(_s.error)) {_s.error('ajax不被支持！')}
 				}
 				return xhr;
 			},
@@ -911,21 +952,21 @@
 			get:function(u,d,f,t){
 				if (!u) {return false;}
 				var _d=d,_f=f,_t=t;
-				if (sjs.isFunction(_d)) {
+				if (M.isFunction(_d)) {
 					_t=_f;
 					_f=_d;
 					_d=null;
 				}
-				return sjs.ajax(u,{success:_f,data:_d,dataType:_t||'html'});
+				return M.ajax(u,{success:_f,data:_d,dataType:_t||'html'});
 			},
 			getJSON:function(u,d,f){
 				if (!u) {return false;}
 				var _d=d,_f=f;
-				if (sjs.isFunction(_d)) {
+				if (M.isFunction(_d)) {
 					_f=_d;
 					_d=null;
 				}
-				return sjs.ajax(u,{success:_f,data:_d,dataType:'json'});
+				return M.ajax(u,{success:_f,data:_d,dataType:'json'});
 			},
 			getScript:function(u,f){
 				if (!u) {return false;}
@@ -938,12 +979,12 @@
 			post:function(u,d,f,t){
 				if (!u) {return false;}
 				var _d=d,_f=f,_t=t;
-				if (sjs.isFunction(_d)) {
+				if (M.isFunction(_d)) {
 					_t=_f;
 					_f=_d;
 					_d=null;
 				}
-				return sjs.ajax(u,{type:'post',success:_f,data:_d,dataType:_t});
+				return M.ajax(u,{type:'post',success:_f,data:_d,dataType:_t});
 			}
 	 	},
 	 	/**浏览器扩展*/
@@ -991,10 +1032,10 @@
 			on:function(){
 				if (arguments.length>1){
 					var et=arguments[0],d=arguments[1],fn=arguments[2];					
-					if (sjs.isFunction(d)) {
+					if (M.isFunction(d)) {
 						fn=d;d=null;
 					}else{
-						if (!fn||!sjs.isFunction(fn)) {
+						if (!fn||!M.isFunction(fn)) {
 							return this;
 						}
 					}
@@ -1003,7 +1044,7 @@
 						//事件委托
 						document.addEventListener(et,function(e){
 							if(_ES[e.type]){
-								sjs(e.target).trigger(e.type,e);
+								M(e.target).trigger(e.type,e);
 							}
 						},false);
 					}
@@ -1069,7 +1110,7 @@
 							}
 						}else{
 							//删除所有
-							sjs.each(_ES,function(i,d){
+							M.each(_ES,function(i,d){
 								delete d[hash];
 							});
 						}
@@ -1103,7 +1144,7 @@
 		},
 		ANIMS={
 			delay:function(t){
-				if (sjs.isNumeric(t)) {
+				if (M.isNumeric(t)) {
 					$(this).each(function(d){
 						var q=gfx(d);
 							q.stacks.push({'dur':t});
@@ -1132,34 +1173,34 @@
 						var as=_AS[idx],l=as?as.stacks.length:0,p={};
 						for (var i = 0; i <l; i++) {
 							if (as.stacks[i].tran) {
-								sjs.extend(p,as.stacks[i].tran)
+								M.extend(p,as.stacks[i].tran)
 							}
 						}
-						sjs(d).css(p);
+						M(d).css(p);
 					}
-					sjs(d).css(_apre,'');
+					M(d).css(_apre,'');
 					_AS[idx].stacks=[];
 				});
 				return this;
 			},
 			/**animate(params,[speed],[easing],[fn])*/
 			animate:function(p,s,e,f){
-				if (!sjs.isPlainObject(p)||sjs.isEmptyObject(p)) {return this;};
-				var	_s=(s==undefined||sjs.isPlainObject(s))?100:s,
+				if (!M.isPlainObject(p)||M.isEmptyObject(p)) {return this;};
+				var	_s=(s==undefined||M.isPlainObject(s))?100:s,
 					_e=!e?'ease':e,
 					_f=f;
-					if (sjs.isPlainObject(s)) {
+					if (M.isPlainObject(s)) {
 						_s=s.speed?s.speed:_s;
 						_e=s.easing?s.easing:_e;
 						_f=s.callback?s.callback:_f;
 					};
-					_s=sjs.isString(_s)?(speed[_s]||100):_s;
+					_s=M.isString(_s)?(speed[_s]||100):_s;
 					_e=_e=='swing'?'ease-in-out':_e;
 				//更新动画队列
  				this.each(function(d){
 					var queue=gfx(d),tran={};
 					tran[ntp]='all';tran[ntd]=_s/1000+'s';tran[nttf]=_e;
-					sjs.extend(tran,p);
+					M.extend(tran,p);
 					queue.stacks.push({dur:_s,tran:tran,fn:_f});
 					_AS[id(d)]=queue;
 				});
@@ -1170,12 +1211,12 @@
 			_run:function(){
 				//启动全局动画队列
 				if (atimer==null) {
-					atimer=UT.raf(25,function(n){
+					atimer=new UT.raf(25,function(n){
 						var n=0;
-						sjs.each(_AS,function(i,q){
+						M.each(_AS,function(i,q){
 							if (q.stacks.length==0) {
 								//本对象的动画序列为空，还原并删除队列中的该对象
-								sjs(q.dom).css(q.oldt);
+								M(q.dom).css(q.oldt);
 								delete _AS[i]
 							}else{
 								var stack=q.stacks[0];
@@ -1183,7 +1224,7 @@
 								if (q.t==0) {
 									q.t=Date.now();
 									if (stack.tran!=undefined) {
-										sjs(q.dom).css(stack.tran);
+										M(q.dom).css(stack.tran);
 									}
 								}else{
 									//判断结束
@@ -1198,16 +1239,16 @@
 						});
 						if (n==0) {this.stop();atimer=null};
 					});
-					atimer.start();
+					atimer&&atimer.start();
 				};
 			}
 		},
 		/**
 		 * 扩展所有工具包
 		 */
-		SED=sjs.extend({},UT,{browser:bs},AJAXS),ED=sjs.extend(DOMS,EVENTS,ANIMS);
-		sjs.extend(SED);
-		sjs.fn.extend(ED);
+		SED=M.extend({},UT,{browser:bs},AJAXS),ED=M.extend(DOMS,EVENTS,ANIMS);
+		M.extend(SED);
+		M.fn.extend(ED);
 		//全局提供
-		W.sjs = W.$ = sjs;
+		W.sjs = W.$ = M;
 })(window);

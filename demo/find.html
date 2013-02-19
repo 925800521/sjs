@@ -1,0 +1,100 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<script type="text/javascript" src="../test/jquery.min.js"></script>
+	<script type="text/javascript" src="../sjs.js"></script>
+	<title>查找 demo</title>
+	<style type="text/css">
+	*{
+		margin: 5px;
+	}
+	div,span{
+		text-indent: 10px;
+	}
+	span{
+		display: block;
+	}
+	</style>
+</head>
+<body>
+	<input type="button" name="parentsUntil" value="parentsUntil">
+	<input type="button" name="parent" value="parent">
+	<input type="button" name="parents" value="parents">
+	<input type="button" name="find" value="find">
+	<input type="button" name="children" value="children">
+	<input type="button" name="closest" value="closest">
+
+	<div id="info"></div>
+	<hr>
+	<ul  class='u1'>
+		<li class='l1'>list item 1</li>
+		<li class='l2'>list item 2
+			<ul class='u1-1'>
+				<li  class='l1-1'>list item 2-a
+					<span>span1</span>
+					<span>span2</span>
+				</li>
+				<li  class='l2-1'>list item 2-b
+					<div>
+						div
+						<span>span1</span>
+					</div>
+				</li>
+			</ul>
+		</li>
+		<li class='l3'>list item 3</li>
+		<li class='l4'>list item 4</li>
+	</ul>
+</body>
+<script type="text/javascript">
+	/**
+	 * test by awen
+	 * 71752352@qq.com
+	 */
+	var i=0,frame=5,raf,ps;
+ 
+	sjs('input').on('click',function(e){
+		raf&&raf.stop();
+		i=0;
+		sjs('*').not('input,hr').css('border','none');
+ 		switch(e.target.name){
+			case 'parent':
+				// ps=sjs('span').parent();
+				// ps=sjs('span').parent('li');
+				ps=sjs('span').parent(sjs('.l1-1'));
+				sjs('#info').html("sjs('span').parent(sjs('.l1-1')) >> "+ps.length);
+			break;
+			case 'parents':
+				ps=sjs('span').parents('li');
+				//等同于 ps=sjs('span').parentsUntil(null,'li');
+				sjs('#info').html("sjs('span').parents('li') >> "+ps.length);
+			break;
+			case 'parentsUntil':
+				ps=sjs('span').parentsUntil('body');
+				sjs('#info').html("sjs('span').parentsUntil('body') >> "+ps.length);
+			break;
+			case 'find':
+				ps=sjs('li').find('span');
+				sjs('#info').html("sjs('li').find('span') >> "+ps.length);
+			break;
+			case 'children':
+				ps=sjs('li').children('span');
+				sjs('#info').html("sjs('li').children('span') >> "+ps.length);
+			break;
+			case 'closest':
+				ps=sjs('span').closest('li');
+				sjs('#info').html("sjs('span').closest('li') >> "+ps.length);
+			break;
+		}
+		raf=new sjs.raf(frame,function(cnt,s){
+				if (i<s.length) {
+					s.eq(i++).css('border','2px solid #f30');
+				}else{
+					this.stop();
+				}
+			},ps);
+		raf.start();
+	});
+</script>
+</html>
