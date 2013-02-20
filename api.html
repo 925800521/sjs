@@ -16,6 +16,7 @@
  	.tip{padding-left: 20px;}
 	ol,li{margin:0;padding:0;list-style-type:none;}
  	ol li{color:#333}
+	li.section{font-weight: bold;}
  	.detail li{
  		line-height: 30px;
  	}
@@ -130,8 +131,21 @@
 	</ul>
 	<h4 >5。文档处理</h4>
 	<ul class="detail" >
-		<li class="title">remove() <span class="red">*</span></li>
-		<li class="tip">删除符合要求的节点。<span class="red">*</span>参数中的选择器去掉了</li>
+		<li class="title">remove([expr])</li>
+		<li class="tip">从DOM中删除所有匹配的元素。这个方法不会把匹配的元素从jQuery对象中删除，因而可以在将来再使用这些匹配的元素。</li>
+		<li class="title">empty()</li>
+		<li class="tip">删除匹配的元素集合中所有的子节点</li>
+		<li class="title">clone([Event]) <span class="red">*</span></li>
+		<li class="tip">clone符合要求的节点。<span class="red">*</span>不能复制后代元素的事件</li>
+		<li class="section">内部操作</li>
+		<li class="title">append(content|ele|obj|fn)</li>
+		<li class="tip">向每个匹配的元素内部追加内容。如果匹配的元素不为空，且传入的是具体的node或者sjs对象，将删除原匹配对象</li>
+		<li class="title">appendTo(content|ele|obj)</li>
+		<li class="tip">把所有匹配的元素追加到另一个指定的元素元素集合中。</li>
+		<li class="title">prepend(content|ele|obj|fn)</li>
+		<li class="tip">向每个匹配的元素内部前置内容。与append只是插入位置一首一尾的区别</li>
+		<li class="title">prependTo(content|ele|obj)</li>
+		<li class="tip">把所有匹配的元素前置到另一个、指定的元素元素集合中。</li>
 	</ul>
 	<h4 >6。过滤</h4>
 	<div>　只提供了基础的筛选方法，像jquery中的first(),last(),map()。。。筛选方法，sjs中是不存在的，因为有些多余</div>
@@ -153,21 +167,34 @@
 
 	</ul>
 	<h4 >7。查找</h4>
-	<div>扩展了参数的范围，过滤参数不仅仅是表达式</div>
 	<ul>
+		<li class="title">find(expr) <span class="red">*</span> </li>
+		<li class="tip">搜索所有与指定表达式匹配的元素。这个函数是找出正在处理的元素的后代元素的好方法。 <span class="red">*</span>本方法只支持字符选择器参数，其它的去掉了。因为在我的生产过程中还真没用过ele或者obj，还耗资源</li>
+		<li class="title">children(expr)</li>
+		<li class="tip">搜索所有与指定表达式匹配的元素。这个函数是找出正在处理的元素的后代元素的好方法。</li>
 		<li class="title">parentsUntil([exp|ele|obj]][,fil])</li>
 		<li class="tip">查找当前元素的所有的父辈元素，直到遇到匹配的那个元素为止,fil为过滤器，内部会调用is来匹配，参数类型见is()</li>
 		<li class="title">parents([exp|ele|obj]])</li>
 		<li class="tip">查找当前元素的所有的父辈元素，可以通过一个过滤参数进行筛选。</li>
 		<li class="title">parent([exp|ele|obj])</li>
 		<li class="tip">取得一个包含着所有匹配元素的唯一父元素的元素集合。你可以使用可选的表达式来筛选。</li>
-		<li class="title">closest(expr)<span class="red">*</span></li>
-		<li class="tip">closest会首先检查当前元素是否匹配，如果匹配则直接返回元素本身。如果不匹配则向上查找父元素，一层一层往上，直到找到匹配选择器的元素。如果什么都没找到则返回一个空的jQuery对象。 <span class="red">*</span>本方法只支持字符选择器参数，另外jQuery貌似没有排除重复元素，这里做了唯一处理</li>
-		<li class="title">find(expr) <span class="red">*</span> </li>
-		<li class="tip">搜索所有与指定表达式匹配的元素。这个函数是找出正在处理的元素的后代元素的好方法。 <span class="red">*</span>本方法只支持字符选择器参数，其它的去掉了。因为在我的生产过程中还真没用过ele或者obj，还耗资源</li>
-		<li class="title">children(expr)</li>
-		<li class="tip">搜索所有与指定表达式匹配的元素。这个函数是找出正在处理的元素的后代元素的好方法。</li>
-
+		<li class="title">closest(expr|obj|ele)<span class="red">*</span></li>
+		<li class="tip">closest会首先检查当前元素是否匹配，如果匹配则直接返回元素本身。如果不匹配则向上查找父元素，一层一层往上，直到找到匹配选择器的元素。如果什么都没找到则返回一个空的jQuery对象。 <span class="red">*</span>本方法不支持两个参数的情况，另外jQuery貌似没有排除重复元素，这里做了唯一处理</li>
+		<li class="title">prevsUntil([exp|ele|obj]][,fil])</li>
+		<li class="tip">查找当前元素之前所有的同辈元素，直到遇到匹配的那个元素为止,fil为过滤器，内部会调用is来匹配，参数类型见is()</li>
+		<li class="title">prevAll([exp|ele|obj]])</li>
+		<li class="tip">查找当前元素之前所有的同辈元素，可以通过一个过滤参数进行筛选。</li>
+		<li class="title">prev([exp|ele|obj])</li>
+		<li class="tip">取得一个包含匹配的元素集合中每一个元素紧邻的前一个同辈元素的元素集合。你可以使用可选的表达式来筛选。</li>
+		<li class="title">nextsUntil([exp|ele|obj]][,fil])</li>
+		<li class="tip">查找当前元素之后所有的同辈元素，直到遇到匹配的那个元素为止,fil为过滤器，内部会调用is来匹配，参数类型见is()</li>
+		<li class="title">nextAll([exp|ele|obj]])</li>
+		<li class="tip">查找当前元素之后所有的同辈元素，可以通过一个过滤参数进行筛选。</li>
+		<li class="title">next([exp|ele|obj])</li>
+		<li class="tip">取得一个包含匹配的元素集合中每一个元素紧邻的后一个同辈元素的元素集合。你可以使用可选的表达式来筛选。</li>
+		<li class="title">siblings([exp|ele|obj])</li>
+		<li class="tip">取得一个包含匹配的元素集合中每一个元素的所有唯一同辈元素的元素集合。可以用可选的表达式进行筛选。</li>
+		
 	</ul>
 	<h4 >8。串联</h4>
 	<ul>

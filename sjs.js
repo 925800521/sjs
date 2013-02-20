@@ -267,6 +267,7 @@
 				if (W==this) {return new M(s,cxt)};
 				//是sjs对象则返回原sjs对象
 				if (isS(s)) {return s;};
+				this.context=cxt?cxt:D;
 				if (s) {
 					/**如果是函数则为ready*/
 					if (M.isFunction(s)) {
@@ -287,13 +288,10 @@
 					}
 					// M(string)
 					if ( typeof s === "string" ) {
-						var _r=cxt?cxt:D;
 						if ( s.charAt(0) === "<" && s.charAt( s.length - 1 ) === ">" && s.length >= 3 ) {
-							var tmp=_r.createElement('div');
-								tmp.innerHTML=s;
-							return M(tmp.firstChild);
+							return M(cd(s,this.context));
 						} else {
-							var doms=_r.querySelectorAll(s);
+							var doms=this.context.querySelectorAll(s);
 							this.length = doms.length;
 							for (var i = 0,len=this.length; i<len; i++) {
 								id(doms[i]);
@@ -362,107 +360,6 @@
 			return to;
 		}
 		///////////////////////////////////常用函数
-		//常规数组去重
-		function uniq(o){
-			var j={},r=[];
-			for (var i = 0; i < o.length; i++) {
-				j[o[i]]=o[i];
-			}
-			M.each(j,function(n,i){
-				r.push(i);
-			});
-			return r;
-		}
-		//dom数组去重
-		function uniqd(o){
-			var ret = [], done = {},i=0,l=o.length;
-			for(;i<l;i++){
-				var d=o[i],j=id(d);
-				if (!done[j]) {
-					done[j]=true;
-					ret.push(d);
-				};
-			}
-			return ret;
-		}
-		//判断是否sjs对象
-		function isS(o){
-			return o&&o.sjs!=undefined;
-		}
-		//获取dom对象的唯一标志
-		function id(d){
-			return d._hash?d._hash:(d._hash=UT.uniqueId());
-		}
-		//将CSS属性名转换成驼峰式
-		function cne(s) {
-		 return s.replace(/-[a-z]/gi,function (c) {
-		  return c.charAt(1).toUpperCase();
-		 });
-		}
-		//获取class值
-		function gc(d,n){
-			return W.getComputedStyle(d).getPropertyValue(n)||'';
-		}
-		//检测是否含有className
-		function hc(d,c){
-			var r=new RegExp('(\\s|^)'+c+'(\\s|$)');
-			return r.test(d.className);
-		}
-		//将数组或者字符串 统一成数组
-		function ba(s,b){
-			b=b?b:' ';
-			return s==undefined?s:M.isArray(s)?s:s.split(b);
-		}
-		function dc(d,c){
-			if (c&&hc(d,c)) {
-				var r=new RegExp('(\\s|^)'+c);
-				d.className=d.className.replace(r,'');
-			}
-		}
-		//获取元素数据
-		function gd(d,k){
-		 	var hash=id(d),ds=_domdatas[hash]||undefined;
-		 	return k==undefined?ds:(ds&&ds[k])?ds[k]:undefined;
-		}
-		//设置元素数据
-		function sd(d,k,v){
-			var hash=id(d);
-			if (!_domdatas[hash]) {_domdatas[hash]={};}
-			_domdatas[hash][k]=v;
-		}
-		//删除数据
-		function dd(d,k){
-			var hash=id(d),ds=_domdatas[hash]||undefined;
-			if (ds){
-				if(k){
-					if (_domdatas[hash][k]) {
-						delete _domdatas[hash][k];
-					}
-				}else{
-					delete _domdatas[hash];
-				}
-			}
-		}
-		/**借用jquery的，挺精简的,扩展了个f参数过滤器
-		 * 从一个元素出发，迭代检索某个方向上的所有元素并记录，直到与遇到document对象或遇到until匹配的元素
-		 * 迭代条件（简化）：cur.nodeType !== 9 && !M( cur ).is( until ) 
-		 * elem		起始元素
-		 * dir		迭代方向，可选值（Node 对象的属性）：如parentNode nextSibling previousSibling
-		 * until	选择器表达式，如果遇到until匹配的元素，迭代终止
-		 * f 		过滤器，会调用is来判断元素是否匹配
-		 * only 	是否只返回第一个符合要求的
-		 */
-		function dir(elem,dir,until,f,only){
-			var matched = [],cur = elem[ dir ];
-			while ( cur && cur.nodeType !== 9 && (until === undefined || cur.nodeType !== 1 || !M( cur ).is( until ))) {
-				if ( cur.nodeType === 1 && (!f || M(cur).is(f))) {
-					if (only) {return cur;}
-					matched.push( cur );
-				}
-				cur = cur[dir];
-			}
-			return matched;
-		}
 		//ajax回调函数绑定
 		function ajaxcall(xhr,s){
 			if (!s || !xhr) {return false;};
@@ -512,6 +409,177 @@
 				}
 			}
 		}
+		//将数组或者字符串 统一成数组
+		function ba(s,b){
+			b=b?b:' ';
+			return s==undefined?s:M.isArray(s)?s:s.split(b);
+		}
+		//根据字符串创建dom
+		function cd(s,cxt){
+			var d=cxt?cxt:D,tmp=d.createElement('div');
+				tmp.innerHTML=s;
+			return AP.slice.call(tmp.children,0);
+		}
+		//将CSS属性名转换成驼峰式
+		function cne(s) {
+		 return s.replace(/-[a-z]/gi,function (c) {
+		  return c.charAt(1).toUpperCase();
+		 });
+		}
+		//删除classname
+		function dc(d,c){
+			if (c&&hc(d,c)) {
+				var r=new RegExp('(\\s|^)'+c);
+				d.className=d.className.replace(r,'');
+			}
+		}
+		//删除数据
+		function dd(d,k){
+			var hash=id(d),ds=_domdatas[hash]||undefined;
+			if (ds){
+				if(k){
+					if (_domdatas[hash][k]) {
+						delete _domdatas[hash][k];
+					}
+				}else{
+					delete _domdatas[hash];
+				}
+			}
+		}
+		/**借用jquery的，挺精简的
+		 * 从一个元素出发，迭代检索某个方向上的所有元素并记录，直到与遇到document对象或遇到until匹配的元素
+		 * 迭代条件（简化）：cur.nodeType !== 9 && !M( cur ).is( until ) 
+		 * elem		起始元素
+		 * dir		迭代方向，可选值（Node 对象的属性）：如parentNode nextSibling previousSibling
+		 * until	选择器表达式，如果遇到until匹配的元素，迭代终止
+		 * only 	是否只返回第一个符合要求的
+		 */
+		function dir(elem,dir,until,only){
+			var matched = [],cur = elem[ dir ];
+			while ( cur && cur.nodeType !== 9 && (!until|| cur.nodeType !== 1 || !M( cur ).is( until ))) {
+				if ( cur.nodeType === 1 ) {
+					if (only) {return cur;}
+					matched.push( cur );
+				}
+				cur = cur[dir];
+			}
+			return matched;
+		}
+		/*~parentsUntil,nextUntil,prevUntil*/
+		function diru(type,o,s,f){
+			var ps=[],i=0,l=o.length,r;
+			for(;i<l;i++){
+				M.merge(ps,dir(o[i],type,s));
+			}
+			r=M(uniqd(ps));
+			return f?r.filter(f):r;
+		}
+		/*~parent,next,prev*/
+		function dirs(type,o,s){
+			var ps=[],i=0,l=o.length,r;
+			for(;i<l;i++){
+				var p=o[i][type];
+				p&&ps.push(p);
+			}
+			r=M(uniqd(ps));
+ 			return s?r.filter(s):r;
+		}
+		//获取class值
+		function gc(d,n){
+			return W.getComputedStyle(d).getPropertyValue(n)||'';
+		}
+		//获取元素数据
+		function gd(d,k){
+		 	var hash=id(d),ds=_domdatas[hash]||undefined;
+		 	return k==undefined?ds:(ds&&ds[k])?ds[k]:undefined;
+		}
+		//获取dom的outhtml代码
+		function gh(d){
+			if (d.outerHTML) {return d.outerHTML};
+			var t=D.createElement('div');t.appendChild(d.cloneNode(true));
+			return t.innerHTML;
+		}
+		//检测是否含有className
+		function hc(d,c){
+			var r=new RegExp('(\\s|^)'+c+'(\\s|$)');
+			return r.test(d.className);
+		}
+		//获取dom对象的唯一标志,e强制重新获取
+		function id(d,e){
+			return (e||!d._hash)?(d._hash=UT.uniqueId()):d._hash;
+		}
+		// 判断是否sjs对象
+		function isS(o){
+			return o&&o.sjs!=undefined;
+		}
+		//parent child操作  r是否是内部前置添加
+		function pc(o,s,r){
+			// 1 速度，但是缺点是没法复制event
+			// if (s&&o.length>0){
+			// 	var isf=M.isFunction(s),isstr=M.isString(s),iss=isS(s),_s=isstr?s:isf?null:M(s).htmls();
+			// 	if (!isstr&&!isf){M(s).remove();}
+			// 	o.each(function(d,j){
+			// 		var ss=_s||(isf&&s.call(d,j,d.innerHTML));
+			// 		iss&&s.add(ss); //将新生成的对象扩展到s
+			// 		(r&&(d.innerHTML=ss+d.innerHTML)) ||(d.innerHTML+=ss);
+			// 	});
+			// };
+			if (s&&o.length>0){
+				var isf=M.isFunction(s),isstr=M.isString(s),iss=isS(s),_s=(!isstr&&!isf)?M(s):null,rs=[];
+ 				o.each(function(d,i){
+					if (_s) {
+ 						var cs=i>0?_s.clone(true):_s;
+ 						cs.each(function(m){
+							(r&&(d.insertBefore(m,d.firstChild))) ||d.appendChild(m);
+						});
+						iss&&(i>0)&&rs.push(cs);
+ 					}else{
+						var h=isf?s.call(d,i,d.innerHTML):s;
+						(r&&(d.innerHTML=h+d.innerHTML))||(d.innerHTML+=h);
+					}
+				});
+				if (iss) {
+					for (var i = 0; i < rs.length; i++) {
+						s.add(rs[i]);
+					}
+				}
+			}
+			return o;
+		}
+		//silbings操作,r是否after
+		function sc(o,s,r){
+
+		}
+		//设置元素数据
+		function sd(d,k,v){
+			var hash=id(d);
+			if (!_domdatas[hash]) {_domdatas[hash]={};}
+			_domdatas[hash][k]=v;
+		}
+		//常规数组去重
+		function uniq(o){
+			var j={},r=[];
+			for (var i = 0; i < o.length; i++) {
+				j[o[i]]=o[i];
+			}
+			M.each(j,function(n,i){
+				r.push(i);
+			});
+			return r;
+		}
+		//dom数组去重
+		function uniqd(o){
+			var ret = [], done = {},i=0,l=o.length;
+			for(;i<l;i++){
+				var d=o[i],j=id(d);
+				if (!done[j]) {
+					done[j]=true;
+					ret.push(d);
+				};
+			}
+			return ret;
+		}		
+	
 		//dom扩展
 		var _domdatas={},DOMS={
 	 		data:function(k,v){
@@ -550,7 +618,7 @@
 	 			if (this.length==0) {
 	 				return this;
 	 			}
-	 			if (!s) {
+	 			if (s==undefined) {
 	 				return this[0].innerHTML;
 	 			}
 	 			var h=M.isString(s)?s:null,isfunc=M.isFunction(s);
@@ -561,6 +629,14 @@
 	 				};
 	 				this.innerHTML=h;
 	 			});
+	 		},
+	 		//获取所有匹配元素的整合html代码字符串
+	 		htmls:function(){
+	 			var h='';
+	 			this.each(function(d){
+	 				h+=gh(d);
+	 			});
+	 			return h;
 	 		},
 	 		val:function(s){
 	 			return s==undefined?(this[0].value||''):this.each(function(d,i){
@@ -820,39 +896,6 @@
 				}
 			},
 			//查找
-			parentsUntil:function(s,f){
-				var ps=[],i=0,l=this.length;
-				for(;i<l;i++){
-					M.merge(ps,dir(this[i],'parentNode',s,f));
-				}
-				return M(uniqd(ps));
-			},
-			parent:function(s){
-				var ps=[],i=0,l=this.length;
-				for(;i<l;i++){
-					var p=this[i].parentNode;
-					p&&(!s||M(p).is(s))&&ps.push(p);
-				}
-				return M(uniqd(ps));
-			},
-			//效率待优化
-			parents:function(s){
-				return this.parentsUntil(null,s);
-			},
-			//代码待检查
-			closest:function(s){
-				var ps=[];
-				for (var i = this.length - 1; i >= 0; i--) {
-					var d=this[i],p;
-					if (M(d).is(s)) {
-						ps.push(d);
-					}else{
-						p=dir(this[i],'parentNode',null,s,true);
-						p.nodeType&&ps.push(p);
-					}
-				}
-				return M(uniqd(ps));
-			},
 			find:function(s,c){
 				var r=[];
 				for (var i = this.length - 1; i >= 0; i--) {
@@ -867,8 +910,50 @@
 				var _s=!s?'*':s;
   				return this.find(_s,true);
 			},
-			// siblings:function(){},
-			
+			parentsUntil:function(s,f){
+				return diru('parentNode',this,s,f);
+			},
+			parent:function(s){
+				return dirs('parentNode',this,s);
+			},
+			parents:function(s){
+				return this.parentsUntil(null,s);
+			},
+			closest:function(s){
+				var ps=[],r;
+				for (var i = this.length - 1; i >= 0; i--) {
+					var d=this[i],p;
+					if (M(d).is(s)) {
+						ps.push(d);
+					}else{
+						p=dir(this[i],'parentNode',null,true);
+						p.nodeType&&ps.push(p);
+					}
+				}
+				r=M(uniqd(ps));
+				return s?r.filter(s):r;
+			},
+			nextUntil:function(s,f){
+				return diru('nextElementSibling',this,s,f);
+			},
+			next:function(s){
+				return dirs('nextElementSibling',this,s);
+			},
+			nextAll:function(s){
+				return this.nextUntil(null,s);
+			},
+			prevUntil:function(s,f){
+				return diru('previousElementSibling',this,s,f);
+			},
+			prev:function(s){
+				return dirs('previousElementSibling',this,s);
+			},
+			prevAll:function(s){
+				return this.prevUntil(null,s);
+			},
+			siblings:function(s){
+				return this.nextAll(s).add(this.prevAll(s));
+			},
 			// 串联
 			add:function(s){
 				var ins=this;
@@ -877,17 +962,45 @@
 				});
 				return M(uniqd(this));
 			},
-			
-			//文档处理
-			remove:function(){
-	 			return this.each(function() {
-						this.parentNode != null && this.parentNode.removeChild(this);
+			//文档处理 效率待提高
+			append:function(s){
+				return pc(this,s);
+			},
+			appendTo:function(s){
+				M(s).append(this);
+ 				return this;
+			},
+			prepend:function(s){
+				return pc(this,s,true);
+			},
+			prependTo:function(s){
+ 				M(s).prepend(this);
+				return this;
+			},
+			// replace:function(){},
+			clone:function(e){
+				var ins=this,n=M(this.htmls());
+				return Event?n.each(function(d,i){
+ 					for (var k in _ES) {
+ 						var e=_ES[k][id(ins[i])];
+ 						//事件会连动，删除一个另外一个也会删除
+ 						e&&(_ES[k][id(d)]=e);  
+					}
+				}):n;
+			},
+			empty:function(){
+				return this.html('');
+			},
+			remove:function(s){
+	 			return this.each(function(d) {
+	 				if ((!s||M(d).is(s))&&d.parentNode) {
+	 					d.parentNode.removeChild(d);
+	 					for (var k in _ES) {
+	 						delete _ES[k][id(d)];
+	 					}
+	 				}
 				});
 			},
-			// append:function(){},
-			// replace:function(){},
-			// clone:function(){},
-			// empty:function(){},
 
 	 	},
 	 	//ajax
@@ -1089,33 +1202,32 @@
 				return this;
 			},
 			off:function(et,fn){
-					this.each(function(d){
-						var hash=id(d),items;
-						if (et && _ES[et]) {
-							if (items=_ES[et][hash]) {
-								if(fn){
-									var _dels=[];
-									for (var i =items.length - 1; i >= 0; i--) {
-										if (items[i]['fn']==fn) {
-											_dels.push(i);
-										}
+				this.each(function(d){
+					var hash=id(d),items;
+					if (et && _ES[et]) {
+						if (items=_ES[et][hash]) {
+							if(fn){
+								var _dels=[];
+								for (var i =items.length - 1; i >= 0; i--) {
+									if (items[i]['fn']==fn) {
+										_dels.push(i);
 									}
-									//数组分离删除，防止序号错乱
-									for (var i = _dels.length - 1; i >= 0; i--) {
-										_ES[et][hash].splice(i,1);
-									}
-								}else{
-									delete _ES[et][hash];
 								}
+								//数组分离删除，防止序号错乱
+								for (var i = _dels.length - 1; i >= 0; i--) {
+									_ES[et][hash].splice(i,1);
+								}
+							}else{
+								delete _ES[et][hash];
 							}
-						}else{
-							//删除所有
-							M.each(_ES,function(i,d){
-								delete d[hash];
-							});
 						}
-					});
-				
+					}else{
+						//删除所有
+						M.each(_ES,function(i,d){
+							delete d[hash];
+						});
+					}
+				});
 				return this;
 			},
 			one:function(et,d,fn){

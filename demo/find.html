@@ -9,7 +9,7 @@
 	*{
 		margin: 5px;
 	}
-	div,span{
+	div,span,p{
 		text-indent: 10px;
 	}
 	span{
@@ -18,15 +18,33 @@
 	</style>
 </head>
 <body>
-	<input type="button" name="parentsUntil" value="parentsUntil">
-	<input type="button" name="parent" value="parent">
-	<input type="button" name="parents" value="parents">
 	<input type="button" name="find" value="find">
 	<input type="button" name="children" value="children">
 	<input type="button" name="closest" value="closest">
 
+	<input type="button" name="parentsUntil" value="parentsUntil">
+	<input type="button" name="parent" value="parent">
+	<input type="button" name="parents" value="parents">
+
+	<input type="button" name="nextUntil" value="nextUntil">
+	<input type="button" name="next" value="next">
+	<input type="button" name="nextAll" value="nextAll">
+
+	<input type="button" name="prevUntil" value="prevUntil">
+	<input type="button" name="prev" value="prev">
+	<input type="button" name="prevAll" value="prevAll">
+	<input type="button" name="siblings" value="siblings">
+
 	<div id="info"></div>
-	<hr>
+	<div>div</div>
+	<div>div</div>
+	<span>span</span>
+	<p>p</p>
+	<div>div</div>
+	<span>span</span>
+	<div>div</div>
+	<span>span</span>
+	<span>span</span>
 	<ul  class='u1'>
 		<li class='l1'>list item 1</li>
 		<li class='l2'>list item 2
@@ -38,8 +56,9 @@
 				<li  class='l2-1'>list item 2-b
 					<div>
 						div
-						<span>span1</span>
+						<span>span</span>
 					</div>
+					<span>span</span>
 				</li>
 			</ul>
 		</li>
@@ -52,40 +71,58 @@
 	 * test by awen
 	 * 71752352@qq.com
 	 */
-	var i=0,frame=5,raf,ps;
+	var i=0,frame=5,raf,ps,dos=function(c){
+		ps=eval(c);
+		sjs('#info').html(c+" >> "+ps.length);
+	};
  
 	sjs('input').on('click',function(e){
 		raf&&raf.stop();
 		i=0;
-		sjs('*').not('input,hr').css('border','none');
+		sjs('*').not('input').css('border','none');
  		switch(e.target.name){
 			case 'parent':
 				// ps=sjs('span').parent();
 				// ps=sjs('span').parent('li');
-				ps=sjs('span').parent(sjs('.l1-1'));
-				sjs('#info').html("sjs('span').parent(sjs('.l1-1')) >> "+ps.length);
+				dos("sjs('span').parent(sjs('.l1-1'))");
 			break;
 			case 'parents':
-				ps=sjs('span').parents('li');
-				//等同于 ps=sjs('span').parentsUntil(null,'li');
-				sjs('#info').html("sjs('span').parents('li') >> "+ps.length);
+				dos("sjs('span').parents('li')");
+				//等同于 dos("sjs('span').parentsUntil(null,'li');
 			break;
 			case 'parentsUntil':
-				ps=sjs('span').parentsUntil('body');
-				sjs('#info').html("sjs('span').parentsUntil('body') >> "+ps.length);
-			break;
+				dos("sjs('span').parentsUntil('body')");
+ 			break;
 			case 'find':
-				ps=sjs('li').find('span');
-				sjs('#info').html("sjs('li').find('span') >> "+ps.length);
-			break;
+				dos("sjs('li').find('span')");
+ 			break;
 			case 'children':
-				ps=sjs('li').children('span');
-				sjs('#info').html("sjs('li').children('span') >> "+ps.length);
-			break;
+				dos("sjs('li').children('span')");
+ 			break;
 			case 'closest':
-				ps=sjs('span').closest('li');
-				sjs('#info').html("sjs('span').closest('li') >> "+ps.length);
-			break;
+				dos("sjs('span').closest('li')");
+ 			break;
+			case 'nextUntil':
+				dos("sjs('div').nextUntil('li')");
+ 			break;
+			case 'next':
+				dos("sjs('div').next('span')");
+ 			break;
+			case 'nextAll':
+				dos("sjs('div').nextAll('span')");
+ 			break;
+			case 'prevUntil':
+				dos("sjs('div').prevUntil('input')");
+ 			break;
+			case 'prev':
+				dos("sjs('span').prev('div')");
+ 			break;
+			case 'prevAll':
+				dos("sjs('span').prevAll('div')");
+ 			break;
+			case 'siblings':
+				dos("sjs('span').siblings('div')");
+ 			break;
 		}
 		raf=new sjs.raf(frame,function(cnt,s){
 				if (i<s.length) {

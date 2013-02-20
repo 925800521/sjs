@@ -4,7 +4,7 @@
 1 修改了sjs.stop()中的一个小bug(dom对象本身动画状态的保留)
 2 修改了merge中的一个bug
 3 增加了（is,has,filter,not,hasClass,slice）过滤接口
-4 增加了（parentsUntil，parent）查询接口
+4 增加了（parentsUntil,parent）查询接口
 
 ============================================
 2013-2-19
@@ -13,3 +13,9 @@
 2 增加了(add)	串连接口
 3 优化了sjs(html)
 
+============================================
+2013-2-20
+---------
+1 优化了parents效率
+2 增加了（prev,prevAll,prevUntil,next,nextAll,nextUntil,silbings）查询接口
+3 增加了（clone,empty,append,appendTo,prepend,prependTo）文档操作接口
