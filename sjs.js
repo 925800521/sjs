@@ -9,10 +9,11 @@
 		ua=wn.userAgent.toLowerCase(),
 		av=wn.appVersion,
 		AP=Array.prototype,
+		RAF = W.requestAnimationFrame|| W.mozRequestAnimationFrame|| W.webkitRequestAnimationFrame|| W.msRequestAnimationFrame|| W.oRequestAnimationFrame|| function(f) {setTimeout(f, 1000/60);},
+ 		sh=/^[^<]*(<[\w\W]+>)[^>]*$|^#([\w-]+)$/,
  		type=function(o){
 			return o!=undefined?(Object.prototype.toString.call(o)).slice(8,-1):'undefined';
 		},
-		RAF = W.requestAnimationFrame|| W.mozRequestAnimationFrame|| W.webkitRequestAnimationFrame|| W.msRequestAnimationFrame|| W.oRequestAnimationFrame|| function(callback) {setTimeout(callback, 1000/60);},
 		/*基础工具类*/
 		UT={
 			noConflict:function(){
@@ -288,14 +289,15 @@
 					}
 					// M(string)
 					if ( typeof s === "string" ) {
-						if ( s.charAt(0) === "<" && s.charAt( s.length - 1 ) === ">" && s.length >= 3 ) {
-							return M(cd(s,this.context));
+						var ds;
+						if ((ds=sh.exec(s))&&ds[1]) {
+							return M(cds(ds[1]));
 						} else {
-							var doms=this.context.querySelectorAll(s);
-							this.length = doms.length;
+							ds=this.context.querySelectorAll(s);
+							this.length = ds.length;
 							for (var i = 0,len=this.length; i<len; i++) {
-								id(doms[i]);
-								this[i]=doms[i];
+								id(ds[i]);
+								this[i]=ds[i];
 							}
 							this.selector=s;
 						}
@@ -414,11 +416,20 @@
 			b=b?b:' ';
 			return s==undefined?s:M.isArray(s)?s:s.split(b);
 		}
-		//根据字符串创建dom
-		function cd(s,cxt){
-			var d=cxt?cxt:D,tmp=d.createElement('div');
+		//根据字符串创建dom数组,f=true的话 返回documentfragment对象
+		function cds(s,f){
+			var tmp=D.createElement('div');
 				tmp.innerHTML=s;
-			return AP.slice.call(tmp.children,0);
+			if (f===true) {
+				var doc=D.createDocumentFragment(),c=tmp.firstChild;
+				while(c){
+					var d=c,c=c.nextSibling;
+					doc.appendChild(d);
+				}
+				return doc;
+			}else{
+				return AP.slice.call(tmp.children,0);
+			}
 		}
 		//将CSS属性名转换成驼峰式
 		function cne(s) {
@@ -512,30 +523,40 @@
 		function isS(o){
 			return o&&o.sjs!=undefined;
 		}
-		//parent child操作  r是否是内部前置添加
-		function pc(o,s,r){
-			// 1 速度，但是缺点是没法复制event
-			// if (s&&o.length>0){
-			// 	var isf=M.isFunction(s),isstr=M.isString(s),iss=isS(s),_s=isstr?s:isf?null:M(s).htmls();
-			// 	if (!isstr&&!isf){M(s).remove();}
-			// 	o.each(function(d,j){
-			// 		var ss=_s||(isf&&s.call(d,j,d.innerHTML));
-			// 		iss&&s.add(ss); //将新生成的对象扩展到s
-			// 		(r&&(d.innerHTML=ss+d.innerHTML)) ||(d.innerHTML+=ss);
-			// 	});
-			// };
+		//sjs对象整合到documentFragment对象中病返回
+		function stodf(o){
+			var d=D.createDocumentFragment();
+			for (var i = 0; i < o.length; i++) {
+				o[i]
+			};
+			return d;
+		}
+		//parent child操作  r是操作的类型 0,append（默认）,1perpend,2after,3before,4 replaceWith
+		function dom(o,s,r){
 			if (s&&o.length>0){
 				var isf=M.isFunction(s),isstr=M.isString(s),iss=isS(s),_s=(!isstr&&!isf)?M(s):null,rs=[];
  				o.each(function(d,i){
+ 					var p=r>1?d.parentNode:null;
 					if (_s) {
- 						var cs=i>0?_s.clone(true):_s;
- 						cs.each(function(m){
-							(r&&(d.insertBefore(m,d.firstChild))) ||d.appendChild(m);
-						});
+						//dom,sjs会保留事件
+ 						var cs=i>0?_s.clone(true):_s,
+ 						//集成为docfragment
+ 						df=D.createDocumentFragment();
+ 						cs.each(function(m){df.appendChild(m)});
+
+						((r==1) && (d.insertBefore(df,d.firstChild))) ||
+						((r==2) && p && (((p.lastChild==d)&&p.appendChild(df))||p.insertBefore(df,d.nextSibling)))||
+						((r==3) && p && p.insertBefore(df,d))||
+						((r==4) && p && p.replaceChild(df,d))||
+						d.appendChild(df);
 						iss&&(i>0)&&rs.push(cs);
  					}else{
-						var h=isf?s.call(d,i,d.innerHTML):s;
-						(r&&(d.innerHTML=h+d.innerHTML))||(d.innerHTML+=h);
+						var h=isf?s.call(d,i,d.innerHTML):s,h=r>1?cds(s,true):h;
+						((r==1)&&(d.innerHTML=h+d.innerHTML))||
+						((r==2) && p && (((p.lastChild==d)&&p.appendChild(h))||p.insertBefore(h,d.nextSibling)))||
+						((r==3) && p && p.insertBefore(h,d))||
+						((r==4) && p && p.replaceChild(h,d))||
+						(d.innerHTML+=h);
 					}
 				});
 				if (iss) {
@@ -545,10 +566,6 @@
 				}
 			}
 			return o;
-		}
-		//silbings操作,r是否after
-		function sc(o,s,r){
-
 		}
 		//设置元素数据
 		function sd(d,k,v){
@@ -579,7 +596,6 @@
 			}
 			return ret;
 		}		
-	
 		//dom扩展
 		var _domdatas={},DOMS={
 	 		data:function(k,v){
@@ -639,16 +655,16 @@
 	 			return h;
 	 		},
 	 		val:function(s){
-	 			return s==undefined?(this[0].value||''):this.each(function(d,i){
-	 				if (M.isFunction(s)) {
-	 					var r=s.call(d,i,d.value);
-	 					if (r!=undefined) {
-	 						d.value=r;
-	 					}
-	 				}else{
-	 					d.value=s;
-	 				}
-	 			});
+	 			return this.length==0?undefined:s==undefined?((this[0].value)||''):this.each(function(d,i){
+				 				if (M.isFunction(s)) {
+				 					var r=s.call(d,i,d.value);
+				 					if (r!=undefined) {
+				 						d.value=r;
+				 					}
+				 				}else{
+				 					d.value=s;
+				 				}
+				 			});
 	 		},
 	 		text:function(s){
 	 			if (s) {
@@ -671,7 +687,8 @@
 	 			}
 	 		},
 	 		css:function(a,b){
-	 			if (a==undefined||this.length==0) {return undefined};
+	 			if (a==undefined) {return undefined}
+	 			if (this.length==0) {return this;}
 	 			if (M.isString(a)) {
 	 				var isf=M.isFunction(b),a=cne(a);
 	 				return b==undefined?gc(this[0],a):this.each(function(d,i){
@@ -962,22 +979,43 @@
 				});
 				return M(uniqd(this));
 			},
-			//文档处理 效率待提高
+			//文档处理
 			append:function(s){
-				return pc(this,s);
+				return dom(this,s);
 			},
 			appendTo:function(s){
-				M(s).append(this);
+				dom(M(s),this);
  				return this;
 			},
 			prepend:function(s){
-				return pc(this,s,true);
+				return dom(this,s,1);
 			},
 			prependTo:function(s){
- 				M(s).prepend(this);
+				dom(M(s),this,1);
 				return this;
 			},
-			// replace:function(){},
+			after:function(s){
+				return dom(this,s,2);
+			},
+			before:function(s){
+				return dom(this,s,3);
+			},
+			insertBefore:function(s){
+				dom(M(s),this,3);
+				return this;
+			},
+			insertAfter:function(s){
+				dom(M(s),this,2);
+				return this;
+			},
+			//替换
+			replaceWith:function(s){
+				return dom(this,s,4);
+			},
+			replaceAll:function(s){
+				dom(M(s),this,4);
+				return this;
+			},
 			clone:function(e){
 				var ins=this,n=M(this.htmls());
 				return Event?n.each(function(d,i){
@@ -1000,8 +1038,7 @@
 	 					}
 	 				}
 				});
-			},
-
+			}
 	 	},
 	 	//ajax
 	 	AJAXS={
@@ -1114,7 +1151,8 @@
 			isAndroid  		:(/Android/i).test(ua),
    			isIPad  		:(/ipad/i).test(ua),
    			isIPhone  		:(/iphone os/i).test(ua),
-   			isWMobile		:(/Ws mobile/i).test(ua),
+   			isWMobile		:(/Windows mobile/i).test(ua),
+   			isMobile        :(/mobile|wap/).test(ua),
 
 			isIECore		:(/Trident/i).test(ua),
 			isWebkitCore	:(/webkit/i).test(ua),
@@ -1130,7 +1168,7 @@
 					 		})(),
 			opera			:W.opera?true:false,
 			firefox 		:(/Firefox/i).test(ua),
-			uc  			:(/UC/i).test(ua),
+			uc  			:(/ucweb/i).test(ua),
 			liebao			:(/LBBROWSER/i).test(ua),
 			baidu			:(/BIDUBrowser/i).test(ua)||gwe('GetVersion')=='baidubrowser'
 		},
@@ -1162,8 +1200,8 @@
 						},false);
 					}
 					//将本次选择器放入本对象的data中，便于以后循环获取根据不同selector绑定的事件
-					this.each(function(dom){
-						var hash=id(dom);
+					this.each(function(d){
+						var hash=id(d);
 						if (typeof _ES[et][hash] === "undefined") {
 							_ES[et][hash]=[];
 						}

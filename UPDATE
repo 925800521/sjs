@@ -19,3 +19,8 @@
 1 优化了parents效率
 2 增加了（prev,prevAll,prevUntil,next,nextAll,nextUntil,silbings）查询接口
 3 增加了（clone,empty,append,appendTo,prepend,prependTo）文档操作接口
+
+============================================
+2013-2-21
+---------
+1 增加了 （after,before,insertBefore,insertAfter）文档操作接口

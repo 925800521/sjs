@@ -4,7 +4,7 @@
 	<meta charset="UTF-8">
 	<script type="text/javascript" src="../test/jquery.min.js"></script>
 	<script type="text/javascript" src="../sjs.min.js"></script>
-	<title>dom demo</title>
+	<title>dom demos</title>
 	<style type="text/css">
 	*{
 		margin: 5px;
@@ -17,7 +17,7 @@
 	}
 	#sjs,#jquery{
 		float: left;
-		width: 40%;
+		width: 46%;
 	}
 	.clear{
 		clear: both;
@@ -25,59 +25,55 @@
 	</style>
 </head>
 <body>
-	<p class='clear'>
+	<p>replaceWidth  和replaceAll  总觉的jQuery当参数是jquery对象时有问题，所以sjs的做法是延续append和after等的策略，如果是父元素替换子元素，那是不允许的。详情请测试示例。</p>
+	<h4 class='clear'>
+		<input id="p1" value="div" placeholder="key1"> <input id="p2" value="span" placeholder="key2">
+		<input type="radio" name="ctype" value="str" id='ctype1' checked> <label for="ctype1">字符串</label>
+		<input type="radio" name="ctype" value="ele" id='ctype2'> <label for="ctype2">element</label>
+		<input type="radio" name="ctype" value="obj" id='ctype3'> <label for="ctype3">obj</label>
+		<br>
 		<input type="button" name="append" 		value="append">
 		<input type="button" name="appendTo" 	value="appendTo">
 		<input type="button" name="prepend" 	value="prepend">
-		<input type="button" name="prependTo" 	value="prependTo">	
-	</p>
+		<input type="button" name="prependTo" 	value="prependTo">
+		<br>
+		<input type="button" name="after" 		value="after">	
+		<input type="button" name="before" 		value="before">	
+		<input type="button" name="insertBefore"value="insertBefore">	
+		<input type="button" name="insertAfter" value="insertAfter">	
+		<br>
+		<input type="button" name="replaceWith"value="replaceWith">	
+		<input type="button" name="replaceAll" value="replaceAll">
+	</h4>
 	<div id="jquery">
 		<h5 class="info"></h5>
 		<hr>
-		<div>div</div>
-		<div>div</div>
-		<span>span</span>
-		<p>p</p>
-		<div>div</div>
-		<span>span</span>
-		<div>div</div>
-		<span>span</span>
-		<span>span</span>
-		<ul  class='u1'>
-			<li class='l1'>list item 1</li>
-			<li class='l2'>list item 2
-				<ul class='u1-1'>
-					<li  class='l1-1'>list item 2-a</li>
-					<li  class='l2-1'>list item 2-b</li>
-				</ul>
-			</li>
-			<li class='l3'>list item 3</li>
-			<li class='l4'>list item 4</li>
-		</ul>
+		<div>div0</div>
+		<div>div1
+			<span>div1-span</span>
+		</div>
+		<span>span0</span>
+		<p>p0</p>
+		<div>div2</div>
+		<span>span1</span>
+		<div>div3</div>
+		<span>span2</span>
+		<span>span3</span>
 	</div>
  	<div id="sjs">
  		<h5 class="info"></h5>
 		<hr>
-		<div>div</div>
-		<div>div</div>
-		<span>span</span>
-		<p>p</p>
-		<div>div</div>
-		<span>span</span>
-		<div>div</div>
-		<span>span</span>
-		<span>span</span>
-		<ul  class='u1'>
-			<li class='l1'>list item 1</li>
-			<li class='l2'>list item 2
-				<ul class='u1-1'>
-					<li  class='l1-1'>list item 2-a</li>
-					<li  class='l2-1'>list item 2-b</li>
-				</ul>
-			</li>
-			<li class='l3'>list item 3</li>
-			<li class='l4'>list item 4</li>
-		</ul>
+		<div>div0</div>
+		<div>div1
+			<span>div1-span</span>
+		</div>
+		<span>span0</span>
+		<p>p0</p>
+		<div>div2</div>
+		<span>span1</span>
+		<div>div3</div>
+		<span>span2</span>
+		<span>span3</span>
 	</div>	
 </body>
 <script type="text/javascript">
@@ -85,25 +81,54 @@
 	 * test by awen
 	 * 71752352@qq.com
 	 */
-	var i=0,frame=5,raf,ps,dos=function(m,q1,q2){
+	var i=0,types='str',frame=5,raf,ps,dos=function(m){
+		var content1,content2,ps1,ps2,p1=sjs('#p1').val(),p2=sjs('#p2').val();
+		switch(types){
+			case 'str':
+				content1=('#sjs '+p2);
+				content2=('#jquery '+p2);
+			break;
+			case 'obj':
+				content1=sjs('#sjs '+p2)[0];
+				content2=jQuery('#jquery '+p2)[0];
+			break;
+			case 'ele':
+				content1=sjs('#sjs '+p2);
+				content2=jQuery('#jquery '+p2);
+			break;
+		}
 		console.time('sjs');
-		ps1=sjs('#sjs '+q1)[m]('#sjs '+q2).css('border','1px solid #ccc');
+		try{
+			ps1=sjs('#sjs '+p1)[m](content1).css('border','1px solid #ccc');
+		}catch(e){
+			console.log('sjs error:',e);
+		}
 		console.timeEnd('sjs');
 
 		console.time('jQuery');
-		ps2=jQuery('#jquery '+q1)[m]('#jquery '+q2).css('border','1px solid #ccc');
+		try{
+			ps2=jQuery('#jquery '+p1)[m](content2).css('border','1px solid #ccc');
+		}catch(e){
+			console.log('jQuery error:',e);
+		}
 		console.timeEnd('jQuery');
 
-
-		sjs('#sjs .info').html(ps1.length+" >> sjs('#sjs "+q1+"')."+m+"('#sjs "+q2+"')");
-		sjs('#jquery .info').html(ps2.length+" >> jQuery('#jquery "+q1+"')."+m+"('#jquery "+q2+"')");
+		var len1=ps1?ps1.length:0,len2=ps2?ps2.length:0;
+		sjs('#sjs .info').text(len1+" >> sjs('#sjs "+p1+"')."+m+"('#sjs "+p2+"')");
+		sjs('#jquery .info').text(len2+" >> jQuery('#jquery "+p1+"')."+m+"('#jquery "+p2+"')");
 	};
  
-	sjs('input').on('click',function(e){
-		dos(e.target.name,'div','span');
+	sjs('input[type=button]').on('click',function(e){
+		var d=e.target,n=d.name;
+		dos(n);
 	});
 
+	sjs('input[type=radio]').on('click',function(e){
+		types=this.value;
+		sjs("#jquery,#sjs").html('<h5 class="info"></h5><hr><div>div0</div><div>div1</div><span>span0</span><p>p0</p><div>div2</div><span>span1</span><div>div3</div><span>span2</span><span>span3</span>');
+	});
 
+	//随意绑定事件，看看dom操作时event事件是否保留
 	sjs("#sjs div").on('click',function(){alert('sjs')});
 	jQuery("#jquery div").bind('click',function(){alert('jQuery')});
 

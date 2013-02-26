@@ -21,7 +21,9 @@
 </head>
 <body>
 	<p>
-		因为同一个sjs对象中所有的元素同用一个动画管理栈，所以每个元素相对于上一个元素动画过程中的操作上都有一些微小的延迟。比如变化范围超大并且时间很短时的stop()效果。
+		sjs('div').animate({'width':'90%','background-color':'#030'},'normal','swing',function(){})<br>
+					.animate({'width':100,'font-size':'20px','color':'#f30'},{}).delay(1000)<br>
+					.animate({'width':300,'font-size':'5px','color':'#fff','background-color':'#333'},'slow','linear')
 	</p>
 
 	<input type="button" name="start" value="start-animate">
@@ -30,12 +32,6 @@
 
 	<hr>
 	<div id="box"  style="-webkit-transition:all 0.5s ease">box</div>
-	<br>
-	<div></div>
-	<br>
-	<div></div>
-	<br>
-	<div></div>
 	<br>
 	<div></div>
 	<br>
