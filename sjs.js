@@ -1178,11 +1178,64 @@
 		bs.safari=(/Safari/.test(ua))&&!bs.chrome&&nogc;
 		bs.prefix=bs.isWebkitCore?'webkit':bs.isGeckosCore?'Moz':bs.opera?'O':bs.isIECore?'ms':'';
 	 	/**事件管理栈*/
-	 	var _ES={},
+	 	//滑动事件统一绑定
+	 	function swipe(){
+			var a	='ontouchstart' in W,
+				ES	=a ? 'touchstart' : 'mousedown',
+				EM	=a ? 'touchmove' : 'mousemove',
+				EE	=a ? 'touchend' : 'mouseup',
+				EL	=a ? 'touchleave' : 'mouseout',
+				EC	=a ? 'touchcancel' : 'mouseup';
+
+			var st,et,sx,sy,x,y,tap,swipe;
+			document.addEventListener(ES,function(e){
+		         if (e.touches&&e.touches.length!=1){return;}
+		         var touch = e.touches?e.touches[0]:e;
+		         st=Date.now()||new Date().getTime();
+		         sx = touch.pageX;
+		         sy = touch.pageY;
+		         tap=true;swipe=false;
+		         $(e.target).trigger("swipeStart",e)
+			});
+			document.addEventListener(EM,function(e){
+				if (tap) {
+					swipe=true;
+					var touch =e.touches?e.touches[0]:e;
+					x=touch.pageX;y=touch.pageY;
+
+					var dx=Math.abs(x-sx),dy=Math.abs(y-sy),
+						t=(dx>2||dy>2)?(dx>dy?(x>sx?'Right':'Left'):(y>sy?'Down':'Up')):false;
+					if (t) {
+						e.movement={startx:sx,starty:sy,movex:dx,movey:dy};
+						$(e.target).trigger("swipe",e)
+						$(e.target).trigger("swipe"+t,e)
+					};
+				}
+			});
+			document.addEventListener(EL,function(e){
+				if (tap) {
+					tap=false;
+			       	$(e.target).trigger("swipeEnd",e);
+				};
+			});
+			document.addEventListener(EE,function(e){
+				if (tap) {
+					tap=false;
+			       	$(e.target).trigger("swipeEnd",e);
+				};
+			});
+			document.addEventListener(EC,function(e){
+				if (tap) {
+					tap=false;
+			       	$(e.target).trigger("swipeEnd",e);
+				};
+			});
+		}
+	 	var _ES={},_swipe,
 		EVENTS={
 			on:function(){
 				if (arguments.length>1){
-					var et=arguments[0],d=arguments[1],fn=arguments[2];					
+					var et=arguments[0],d=arguments[1],fn=arguments[2],es;					
 					if (M.isFunction(d)) {
 						fn=d;d=null;
 					}else{
@@ -1190,23 +1243,32 @@
 							return this;
 						}
 					}
-					if (typeof _ES[et] === "undefined") {	
-						_ES[et]={};
-						//事件委托
-						document.addEventListener(et,function(e){
-							if(_ES[e.type]){
-								M(e.target).trigger(e.type,e);
+					es=uniq(et.split(" "));
+					for (var i = 0; i < es.length; i++) {
+						var _e=es[i];
+						if (typeof _ES[_e] === "undefined") {	
+							_ES[_e]={};
+							//事件委托
+							document.addEventListener(_e,function(e){
+								if(_ES[e.type]){
+									M(e.target).trigger(e.type,e);
+								}
+							},false);
+							//滑动事件绑定判断
+							if((_swipe==undefined)&&(_e.indexOf('swipe')>-1)){
+								_swipe=true;
+								swipe();
 							}
-						},false);
-					}
-					//将本次选择器放入本对象的data中，便于以后循环获取根据不同selector绑定的事件
-					this.each(function(d){
-						var hash=id(d);
-						if (typeof _ES[et][hash] === "undefined") {
-							_ES[et][hash]=[];
 						}
-						_ES[et][hash].push({'fn':fn,'data':d,'cnt':0});
-					});
+						//将本次选择器放入本对象的data中，便于以后循环获取根据不同selector绑定的事件
+						this.each(function(d){
+							var hash=id(d);
+							if (typeof _ES[_e][hash] === "undefined") {
+								_ES[_e][hash]=[];
+							}
+							_ES[_e][hash].push({'fn':fn,'data':d,'cnt':0});
+						});
+					};
 				}
 				return this;
 			},
@@ -1216,27 +1278,26 @@
 					//在本对象的事件选择器列表中获取所有绑定事件时使用过的选择器来检索事件
 					this.each(function(d){
 						//始终传入的最后一个参数为event(手动除外)
-						e=e.type?e:{'type':et,'target':d};
-						var hash=id(d),items=_ES[et][hash]||[],_dels=[];
+						e=e.type?e:{'target':d};
+						e.type=et;
+						var hash=id(d),items=_ES[et][hash]||[];
 						for (var j=0,len = items.length; j <len; j++) {
 							e.data=items[j]['data'];
 							e.firecnt=++items[j]['cnt'];
 							//根据返回值来判断是否取消绑定
 							if(items[j]['fn'].call(this,e)===false){
-								_dels.push(j);
+								items.splice(j,1);
 							}
 						}
-						for (var i = _dels.length - 1; i >= 0; i--) {
-							items.splice(_dels[i],1);
-						}
-					})
+						//触发其他自定义绑定事件
+						// try{
+						// 	var evt = document.createEvent('Event'); 
+						// 	evt.initEvent(et,true,true); 
+						// 	d.dispatchEvent(evt); 
+						// }catch(e){console.log(e)}
+					});
  				}
-				//触发其他自定义绑定事件
-				try{
-					var evt = document.createEvent('Event'); 
-					evt.initEvent(et,true,true); 
-					el.dispatchEvent(evt); 
-				}catch(e){}
+				
 				return this;
 			},
 			off:function(et,fn){
