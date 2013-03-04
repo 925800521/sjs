@@ -698,7 +698,7 @@
 	 				var isf=M.isFunction(b);
 	 				return b==undefined?gc(this[0],a):this.each(function(d,i){
 	 					var v=isf?(b.call(this,i,gc(this,a))):b;
-	 					v=M.isNumeric(v)?(v+'px'):v;
+	 					v=((/height|width|left|right|top|bottom|size/i).test(a) && M.isNumeric(v))?(v+'px'):v;
 	 					a=cne(a);
 	 					d.style[a]=v;
 	 				});
