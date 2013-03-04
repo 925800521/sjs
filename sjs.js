@@ -432,9 +432,15 @@
 			}
 		}
 		//将CSS驼峰属性名转换为原本属性名
-		function cne(s) {
+		function cnes(s) {
 			s.replace(/([A-Z])/g,"-$1").toLowerCase();
 			return s.replace(/^(webkit-|moz-|o-|ms-)/,'-$1');
+		}
+		//将CSS属性名改为驼峰
+		function cne(s) {
+			 return s.replace(/-[a-z]/gi,function (c) {
+			  return c.charAt(1).toUpperCase();
+			 });
 		}
 		//删除classname
 		function dc(d,c){
@@ -496,7 +502,7 @@
 		}
 		//获取class值
 		function gc(d,n){
-			return W.getComputedStyle(d).getPropertyValue(n)||'';
+			return W.getComputedStyle(d).getPropertyValue(cnes(n))||'';
 		}
 		//获取元素数据
 		function gd(d,k){
@@ -689,10 +695,11 @@
 	 			if (a==undefined) {return undefined}
 	 			if (this.length==0) {return this;}
 	 			if (M.isString(a)) {
-	 				var isf=M.isFunction(b),a=cne(a);
+	 				var isf=M.isFunction(b);
 	 				return b==undefined?gc(this[0],a):this.each(function(d,i){
 	 					var v=isf?(b.call(this,i,gc(this,a))):b;
 	 					v=M.isNumeric(v)?(v+'px'):v;
+	 					a=cne(a);
 	 					d.style[a]=v;
 	 				});
 	 			}
