@@ -1,0 +1,38 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<script type="text/javascript" src="../sjs.min.js"></script>
+	<style type="text/css">
+		div{
+			display: inline-block;
+			margin:10px;
+			background-color: #ccc;
+			height: 200px;
+			width: 200px;
+		}
+	</style>
+	<title>swipe demo</title>
+</head>
+<body>
+	<div id="touch">
+		fsdgsdfgsdfgsdfgsdfgsdgf<br>asdfasdfsafdasfd
+	</div>
+	<hr>
+	<div id="touch1">
+		
+	</div>
+</body>
+<script type="text/javascript">
+$("div").on('swipe',function(e){
+	e.preventDefault();
+	// console.log(e.type,e.movement);
+	$(this).css("marginLeft",e.movement.x-e.movement.startx);
+});
+
+
+</script>
+</html>

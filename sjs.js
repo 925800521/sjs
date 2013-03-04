@@ -431,11 +431,10 @@
 				return AP.slice.call(tmp.children,0);
 			}
 		}
-		//将CSS属性名转换成驼峰式
+		//将CSS驼峰属性名转换为原本属性名
 		function cne(s) {
-		 return s.replace(/-[a-z]/gi,function (c) {
-		  return c.charAt(1).toUpperCase();
-		 });
+			s.replace(/([A-Z])/g,"-$1").toLowerCase();
+			return s.replace(/^(webkit-|moz-|o-|ms-)/,'-$1');
 		}
 		//删除classname
 		function dc(d,c){
@@ -700,7 +699,6 @@
 	 			if (M.isPlainObject(a)) {
 	 				var ins=this;
 	 				M.each(a,function(k,v){
-	 					k=cne(k);
 	 					ins.css(k,v);
 	 				});
 	 			}
@@ -1206,7 +1204,7 @@
 					var dx=Math.abs(x-sx),dy=Math.abs(y-sy),
 						t=(dx>2||dy>2)?(dx>dy?(x>sx?'Right':'Left'):(y>sy?'Down':'Up')):false;
 					if (t) {
-						e.movement={startx:sx,starty:sy,movex:dx,movey:dy};
+						e.movement={startx:sx,starty:sy,x:x,y:y};
 						$(e.target).trigger("swipe",e)
 						$(e.target).trigger("swipe"+t,e)
 					};
