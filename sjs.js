@@ -62,7 +62,7 @@
 			},
 			/**核心啊，代码换效率*/
 			each:function(o,f){
-				if (sjs.isArray(o)) {
+				if (UT.isArray(o)) {
 					for (var i = 0,l=o.length; i < l; i++) {
 						if(f.call(o,i,o[i])===false){
 							break;
@@ -81,7 +81,7 @@
 			grep:function(o,c,s){
 				var ret=new o.constructor,rs=s===true?false:true;
 				if(o&&c) {
-					M.each(o,function(i,n){
+					UT.each(o,function(i,n){
 						if(c.call(o,n,i)===rs){
 							ret.push(n);
 						}
@@ -100,8 +100,8 @@
 					for (var i = 0,l=o.length; i <l; i++) {
 						var v=f.call(o,o[i],i);
 						if (v==null) {return true}
-						if (sjs.isArray(v)) {
-							sjs.merge(t,v);
+						if (UT.isArray(v)) {
+							UT.merge(t,v);
 						}else{
 							t.push(v);
 						}
@@ -134,10 +134,10 @@
 					}
 				}
 				if (ik!==undefined&&ik!==null) {
-					if (sjs.isArray(o)) {
+					if (UT.isArray(o)) {
 						o.splice(ik,1);
 					}
-					if (sjs.isPlainObject(o)) {
+					if (UT.isPlainObject(o)) {
 						delete o[ik];
 					}
 				}
@@ -149,7 +149,7 @@
 					if ( typeof d !== "string" || !d ) {  
 		        		return null;  
 					}
-					d =sjs.trim(d);
+					d =UT.trim(d);
 					return W.JSON?JSON.parse(d):eval(d);
 				},
 				stringify:function(O){
@@ -198,7 +198,7 @@
 				toQuery:function(o){
 					var s="";
 					for(var k in o){
-						s+=sjs.isEmptyString(s)?"":"&";
+						s+=UT.isEmptyString(s)?"":"&";
 						var v=o[k]==null?"":o[k];
 						s+=k+"="+v;
 					}
@@ -273,7 +273,7 @@
 					/**如果是函数则为ready*/
 					if (M.isFunction(s)) {
 						document.addEventListener("DOMContentLoaded", function(e) {
-							s.call(W,sjs);
+							s.call(W,M);
 						});
 					}
 					// M(DOMElement)
@@ -1380,9 +1380,19 @@
 			return  _AS[i];
 		},
 		ANIMS={
+			isAnimate:function(){
+				var r=false;
+				this.each(function(d){
+					if (_AS[id(d)]) {
+						r=true;
+						return false;
+					}
+				});
+				return r;
+			},
 			delay:function(t){
 				if (M.isNumeric(t)) {
-					$(this).each(function(d){
+					this.each(function(d){
 						var q=gfx(d);
 							q.stacks.push({'dur':t});
 						_AS[id(d)]=q;
@@ -1424,7 +1434,7 @@
 			animate:function(p,s,e,f){
 				if (!M.isPlainObject(p)||M.isEmptyObject(p)) {return this;};
 				var	a=type(s),b=type(e),
-					_s=(!s||a!='String')?100:s,
+					_s=(!s||a!='String')?'normal':s,
 					_e=(!e||b!='String')?'ease':e,
 					_f=a=='Function'?s:b=='Function'?e:f;
 					if (a=='Object') {
@@ -1449,7 +1459,7 @@
 			_run:function(){
 				//启动全局动画队列
 				if (atimer==null) {
-					atimer=new UT.raf(25,function(n){
+					atimer=new UT.raf(20,function(n){
 						var n=0;
 						M.each(_AS,function(i,q){
 							if (q.stacks.length==0) {
@@ -1481,10 +1491,74 @@
 				};
 			}
 		},
+		/**动画扩展包*/
+		animExt=function(oo,t,s,e,f){
+			if (oo.isAnimate()) {return false};
+			oo.each(function(d){
+				var o=$(d),ds=o.data('sjs_aext'),
+					dis=o.css('display'),
+					oc={'overflow':'hidden'},	/*动画初始css属性*/
+					ac={},  					/*动画css属性*/
+					ed='none';					/*动画结束后的显示状态*/
+				if (!ds) {
+					o.save();
+					o.css({'display':'block'});
+					ds=o.getBox();
+					ds.dis=(dis=='none')?'block':dis;
+					o.restore();
+					o.data('sjs_aext',ds);
+				}
+				t=(t=='slideToggle')?((dis=='none')?'slideDown':'slideUp'):((t=='fadeToggle')?((dis=='none')?'fadeIn':'fadeOut'):((t=='spreadToggle')?((dis=='none')?'spreadRight':'spreadLeft'):t));
+				switch(t){
+					case 'slideUp':
+						oc.height=ds.height;
+						ac.height=0;
+					break;
+					case 'slideDown':
+						if(dis!='none'){return oo;}
+						oc.height=0;
+						oc.display=ed=ds.dis;
+						ac.height=ds.height;
+					break;
+					case 'spreadLeft':
+						oc.width=ds.width;
+						ac.width=0;
+					break;
+					case 'spreadRight':
+						if(dis!='none'){return oo;}
+						oc.width=0;
+						oc.display=ed=ds.dis;
+						ac.width=ds.width;
+					break;
+					case 'fadeIn':
+						if(dis!='none'){return oo;}
+						oc.opacity=0;
+						oc.display=ed=ds.dis;
+						ac.opacity=1;
+					break;
+					case 'fadeOut':
+						oc.opacity=1;
+						ac.opacity=0;
+					break;
+				}
+				o.save();
+				o.css(oc).animate(ac,s,e,function(){
+					o.restore();
+					o.css('display',ed);
+					if (f) {f.call(d)};
+				});
+			});
+			return oo;	
+		};
+		UT.each(['slideDown','slideUp','slideToggle','spreadRight','spreadLeft','spreadToggle','fadeIn','fadeOut','fadeToggle'],function(i,d){
+			M.fn[d]=function(s,e,f){
+				return animExt(this,d,s,e,f);
+			}
+		});
 		/**
 		 * 扩展所有工具包
 		 */
-		SED=M.extend({},UT,{browser:bs},AJAXS),ED=M.extend(DOMS,EVENTS,ANIMS);
+		var SED=M.extend({},UT,{browser:bs},AJAXS),ED=M.extend(DOMS,EVENTS,ANIMS);
 		M.extend(SED);
 		M.fn.extend(ED);
 		//全局提供

@@ -1,0 +1,131 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<script type="text/javascript" src="../sjs.js"></script>
+	<style type="text/css">
+		body>div{
+			margin: 10px;
+		}
+		ul,li{
+			list-style-type: none;
+			margin:0px;
+			padding: 0px;
+		}
+		section{
+			text-indent: 15px;
+		}
+		section>header{
+			background-color: #4E6CB4;
+			font-size: 16px;
+			color:#fff;
+			height: 30px;
+			line-height: 30px;
+		}
+		section>ul>li{
+			height: 30px;
+			line-height: 30px;
+			box-shadow: 0 1px 1px #ccc;
+			background-color: #d5d5d5;
+		}
+		section>ul>li>a{
+			color: #333;
+		}
+	</style>
+	<title>aniamte ext</title>
+</head>
+<body>
+	<div class="sjs_list" style="width:200px;float:left">
+		<section class="group_on">
+			<header class="msection">group1</header>
+			<ul style="display:none">
+				<li>list0</li>
+				<li>list1</li>
+				<li>list2</li>
+			</ul>
+		</section>
+		<section>
+			<header class="msection">group2</header>
+			<ul>
+				<li>list0</li>
+				<li>list1</li>						
+			</ul>
+		</section>
+		<section>
+			<header class="msection">group3</header>
+			<ul>
+				<li>list0</li>
+				<li>list1</li>
+				<li>list2</li>
+				<li>list3</li>						
+			</ul>
+		</section>
+	</div>
+	<div class="sjs_list1" style="width:200px;float:left">
+		<section class="group_on">
+			<header class="msection">group1</header>
+			<ul style="display:none">
+				<li>list0</li>
+				<li>list1</li>
+				<li>list2</li>
+			</ul>
+		</section>
+		<section>
+			<header class="msection">group2</header>
+			<ul>
+				<li>list0</li>
+				<li>list1</li>						
+			</ul>
+		</section>
+		<section>
+			<header class="msection">group3</header>
+			<ul>
+				<li>list0</li>
+				<li>list1</li>
+				<li>list2</li>
+				<li>list3</li>						
+			</ul>
+		</section>
+	</div>
+	<div class="sjs_list2" style="width:200px;float:left">
+		<section class="group_on">
+			<header class="msection">group1</header>
+			<ul style="display:none">
+				<li>list0</li>
+				<li>list1</li>
+				<li>list2</li>
+			</ul>
+		</section>
+		<section>
+			<header class="msection">group2</header>
+			<ul>
+				<li>list0</li>
+				<li>list1</li>						
+			</ul>
+		</section>
+		<section>
+			<header class="msection">group3</header>
+			<ul>
+				<li>list0</li>
+				<li>list1</li>
+				<li>list2</li>
+				<li>list3</li>						
+			</ul>
+		</section>
+	</div>
+</body>
+<script type="text/javascript">
+	sjs(".sjs_list header").on('click',function(){
+		sjs(this).parent().children('ul').slideToggle();
+	});
+	sjs(".sjs_list1 header").on('click',function(){
+		sjs(this).parent().children('ul').fadeToggle();
+	});
+	sjs(".sjs_list2 header").on('click',function(){
+		sjs(this).parent().children('ul').spreadToggle();
+	});
+</script>
+</html>
