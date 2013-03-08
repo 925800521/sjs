@@ -711,6 +711,27 @@
 	 			}
 	 			return this;
 	 		},
+			/*css状态保存*/
+	 		save:function(){
+				return this.each(function(d){
+					var s=gd(d,'cstack')||[];
+					s.push({ct:d.style.cssText,cn:d.className});
+					sd(d,'cstack',s);	
+				});
+			},
+			/*css状态回滚
+			**/
+			restore:function(){
+				return this.each(function(d){
+					var s=gd(d,'cstack')||[];
+					if (s.length>0) {
+						var item=s.pop();
+						d.style.cssText=item.ct;
+						d.className=item.cn;
+						sd(d,'cstack',s);
+					}
+				});
+			},
 	 		/*name|properties|key,value|fn*/
 	 		attr:function(a,b){
 	 			if (a) {
@@ -1402,10 +1423,11 @@
 			/**animate(params,[speed],[easing],[fn])*/
 			animate:function(p,s,e,f){
 				if (!M.isPlainObject(p)||M.isEmptyObject(p)) {return this;};
-				var	_s=(s==undefined||M.isPlainObject(s))?100:s,
-					_e=!e?'ease':e,
-					_f=f;
-					if (M.isPlainObject(s)) {
+				var	a=type(s),b=type(e),
+					_s=(!s||a!='String')?100:s,
+					_e=(!e||b!='String')?'ease':e,
+					_f=a=='Function'?s:b=='Function'?e:f;
+					if (a=='Object') {
 						_s=s.speed?s.speed:_s;
 						_e=s.easing?s.easing:_e;
 						_f=s.callback?s.callback:_f;

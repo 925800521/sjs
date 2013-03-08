@@ -118,6 +118,10 @@
 	<ul class="detail" >	
 		<li class="title">css(name|pro|[,val|fn])<span class="red">*</span></li>
 		<li class="tip">设置（所有匹配元素）或者取得(第一个匹配元素)某样式值</li>
+		<li class="title">save()<span class="red">new</span></li>
+		<li class="tip">记录当前对象的样式，同canvas上下文的save方法，可以多次调用</li>
+		<li class="title">restore()<span class="red">new</span></li>
+		<li class="tip">回滚当前对象样式到上一个记录点，同canvas上下文的restore，可以多次调用</li>
 		<li class="title">getBox() <span class="red">new</span></li>
 		<li class="tip">返回dom列表中第一个元素<span class="red">相对于浏览器左上角坐标</span>的Box模型信息.请注意，是相对于浏览器左上角坐标，也就是说right也好bottom也好都是相对于屏幕左上角坐标的</li>
 		<li class="code">
