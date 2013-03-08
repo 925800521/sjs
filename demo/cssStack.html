@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<script type="text/javascript" src="../sjs.js"></script>
+	<title>css stack</title>
+	<style>
+	.test{
+		margin: 10px;
+		background-color:#0C3E3F;
+		height: 20px;
+		width: 100px;
+	}
+	</style>
+</head>
+<body>
+	<div class="test"></div>
+	<div class="test"></div>
+	<div class="test"></div>
+	<div class="test"></div>
+</body>
+<script>
+	var d=$('.test')
+			.save()
+			.animate({'width':200},function(){
+				$(this).save();
+			}).delay(1000)
+			.animate({'background-color':'#329C32'},function(){
+				var o=$(this);
+				setTimeout(function() {
+					o.restore();
+					setTimeout(function() {
+						o.restore();
+					}, 1000);
+				}, 1000);
+				
+			});
+			
+</script>
+</html>
