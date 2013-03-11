@@ -1434,15 +1434,15 @@
 			animate:function(p,s,e,f){
 				if (!M.isPlainObject(p)||M.isEmptyObject(p)) {return this;};
 				var	a=type(s),b=type(e),
-					_s=(!s||a!='String')?'normal':s,
-					_e=(!e||b!='String')?'ease':e,
+					_s=(s==undefined||(a!='String' && a!='Number'))?'normal':s,
+					_e=(e==undefined||b!='String')?'ease':e,
 					_f=a=='Function'?s:b=='Function'?e:f;
 					if (a=='Object') {
 						_s=s.speed?s.speed:_s;
 						_e=s.easing?s.easing:_e;
 						_f=s.callback?s.callback:_f;
 					};
-					_s=M.isString(_s)?(speed[_s]||100):_s;
+					_s=M.isString(_s)?(speed[_s]||speed['normal']):_s;
 					_e=_e=='swing'?'ease-in-out':_e;
 				//更新动画队列
  				this.each(function(d){
