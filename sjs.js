@@ -308,8 +308,7 @@
 				return this.length;
 			},
 			get:function(i){
-				var gs=AP.slice.call(this);
-				return i==undefined?gs:gs[i];
+				return i==undefined?this:this[i];
 			},
 			index:function(){
 				var d=this[0],cs=d.parentNode.children;
@@ -941,11 +940,11 @@
 			//查找
 			find:function(s,c){
 				var r=[];
-				for (var i = this.length - 1; i >= 0; i--) {
+				for (var i = 0,l=this.length; i <l; i++) {
 					var d=this[i],cs=d.querySelectorAll(s);
-					for (var j = cs.length - 1; j >= 0; j--) {
-						(!c||cs[j].parentNode==d)&&r.push(cs[j]);
-					};
+					M.each(cs,function(j,n){
+						(!c||n.parentNode==d)&&r.push(n);
+					});
 				}
 				return M(uniqd(r));
 			},
