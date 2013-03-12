@@ -274,7 +274,7 @@
 					if (M.isFunction(s)) {
 						document.addEventListener("DOMContentLoaded", function(e) {
 							s.call(W,M);
-						});
+						}.false);
 					}
 					// M(DOMElement)
 					if (s.nodeType) {
@@ -1209,15 +1209,32 @@
 			'vmousemove':(bs.hasTouch?'touchmove' : 'mousemove'),
 			'vmouseup':(bs.hasTouch?'touchend' : 'mouseup'),
 			'vmouseout':(bs.hasTouch?'touchleave' : 'mouseout'),
-		};
+		},
 	 	/**事件管理栈*/
 	 	//滑动事件统一绑定
-	 	function swipe(){
+	 	ES={},
+	 	_swipe=false,
+	 	trig=function(et,e){
+	 		var _E=M.extend({'_bubble':true},e);
+	 			_E.type=et;
+				_E.stopPropagation=function(){
+					_E._bubble=false;
+					e.stopPropagation();
+				};
+				_E.preventDefault=function(){
+					e.preventDefault();
+				}
+				ES[et] && M(e.target).trigger(et,_E);
+				if (_E._bubble) {
+					M(e.target).parents().trigger(et,_E);
+				}
+	 	},
+	 	swipe=function(){
 			var st,et,sx,sy,x,y,tap,swipe,lto=800,endtouch=function(e){
-				if (tap && !swipe) {
+				if (tap && !swipe && e.type==SET['vmouseup']) {
 					et=Date.now()||new Date().getTime();
 					if ((et-st)<lto) {
-						$(e.target).trigger("tap",e);
+						trig("tap",e);
 					}
 				}
 				clearInterval(lt);
@@ -1234,10 +1251,10 @@
 					et=Date.now()||new Date().getTime();
 					if ((et-st)>lto) {
 						clearInterval(lt);
-						$(e.target).trigger("longTap",e);
+						trig("longTap",e);
 					}
 		         },200);
-			});
+			},false);
 			document.addEventListener(SET['vmousemove'],function(e){
 				if (tap) {
 					var touch =e.touches?e.touches[0]:e;
@@ -1248,15 +1265,14 @@
 						swipe=true;
 						clearInterval(lt);
 						e.movement={startx:sx,starty:sy,x:x,y:y};
-						$(e.target).trigger("swipe",e)
-						$(e.target).trigger("swipe"+t,e)
+						trig("swipe",e)
+						trig("swipe"+t,e)
 					};
 				}
-			});
-			document.addEventListener(SET['vmouseup'],endtouch);
-			document.addEventListener(SET['vmouseout'],endtouch);
-		}
-	 	var ES={},_swipe,
+			},false);
+			document.addEventListener(SET['vmouseup'],endtouch,false);
+			document.addEventListener(SET['vmouseout'],endtouch,false);
+		},
 		EVENTS={
 			on:function(){
 				if (arguments.length>1){
@@ -1274,12 +1290,12 @@
 						et=SET[et]?SET[et]:et;
 						if (typeof ES[et] === "undefined") {	
 							ES[et]={};
-							//事件委托
+							//事件委托,注意内部不能使用et，不懂去看闭包和变量作用域
 							document.addEventListener(et,function(e){
- 								ES[e.type] && M(e.target).trigger(e.type,e);
+								trig(e.type,e);
  							},false);
 							//滑动事件绑定判断
-							if((_swipe==undefined)&&(/swipe|tap/.test(et))){
+							if((_swipe==false)&&(/swipe|tap/i.test(et))){
 								_swipe=true;
 								swipe();
 							}
@@ -1298,30 +1314,23 @@
 			},
 			trigger:function(et){
 				if (et && ES[et]) {
-					var _dels=[],e=arguments[arguments.length-1];;
+					var _dels=[],e=arguments[arguments.length-1];
 					//在本对象的事件选择器列表中获取所有绑定事件时使用过的选择器来检索事件
 					this.each(function(d){
 						//始终传入的最后一个参数为event(手动除外)
-						e=e.type?e:{'target':d};
-						e.type=et;
+						e=e.type?e:{'target':d,'type':et};
+						if (e._bubble==false) {return false;};
 						var hash=id(d),items=ES[et][hash]||[];
 						for (var j=0,len = items.length; j <len; j++) {
 							e.data=items[j]['data'];
 							e.firecnt=++items[j]['cnt'];
 							//根据返回值来判断是否取消绑定
-							if(items[j]['fn'].call(this,e)===false){
+							if(items[j]['fn'].call(d,e)===false){
 								items.splice(j,1);
 							}
 						}
-						//触发其他自定义绑定事件
-						// try{
-						// 	var evt = document.createEvent('Event'); 
-						// 	evt.initEvent(et,true,true); 
-						// 	d.dispatchEvent(evt); 
-						// }catch(e){console.log(e)}
 					});
  				}
-				
 				return this;
 			},
 			off:function(et,fn){

@@ -1,0 +1,59 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<script type="text/javascript" src="../sjs.js"></script>
+	<style type="text/css">
+	ul>li{
+		margin: 10px;
+	}
+	</style>
+	<title> event </title>
+</head>
+<body>
+	<ul id="ul1">
+		<li id="li1">
+			<div class='btn1' id="div1">button1</div>
+		</li>
+		<li>
+			<div class='btn2'>button2</div>
+		</li>
+		<li>
+			<div class='btn3'>button3</div>
+		</li>
+		<li>
+			<div class='btn4'>button4</div>
+		</li>
+	</ul>
+	<hr>
+	<div id='info'></div>
+</body>
+<script type="text/javascript">
+	$('ul>li>div').on('tap',function(e){
+		console.log('triger tap ',this);
+		// e.stopPropagation();
+	});
+	$('ul>li').on('longTap',function(e){
+		console.log('triger longTap ',this);
+		e.stopPropagation();
+	});
+	$('ul').on('tap',function(e){
+		console.log('triger tap ',this);
+		// e.stopPropagation();
+	});
+	// document.getElementById("div1").addEventListener('click',function(e){
+	// 	console.log('div1 click');
+	// 								e.stopPropagation();
+
+	// });
+	// document.getElementById("li1").addEventListener('click',function(e){
+	// 	console.log('li1 click');
+	// });
+	// document.getElementById("ul1").addEventListener('click',function(e){
+	// 	console.log('ul1 click');
+	// });
+</script>
+</html>
