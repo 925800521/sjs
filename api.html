@@ -219,7 +219,9 @@
 	</ul>
 	<h4 >9。事件</h4>
 	<div>
-		新增了swipeStart,swipeEnd,swipe，swipeLeft，swipeRight，swipeUp，swipeDown，鼠标（手指）滑动事件类型，并在event中提供了movement({startx:1,starty:1,x:100,y:100}：前一组x|y代表其实的pageX|pageY，后一组代表当前的)属性来记录移动情况
+		移动端的touch事件与pc端的mouse事件整合为了,vmousedown,vmouseup,vmousecancel,vmousemove,vmouseout事件类型。
+		新增了tap，longtap点击事件类型。
+		新增了swipe，swipeLeft，swipeRight，swipeUp，swipeDown，鼠标（手指）滑动事件类型，并在event中提供了movement({startx:1,starty:1,x:100,y:100}：前一组x|y代表起始的pageX|pageY，后一组代表当前的)属性来记录移动情况
 	</div>
 	<ul class="detail" >
 		<li class="title">on(type,[data],fn)<span class="red">*</span></li>

@@ -1201,60 +1201,60 @@
 		bs.ie=(bs.isIECore&&nogc);
 		bs.chrome=( /Chrome/i).test(ua)&&W.chrome&&nogc;
 		bs.safari=(/Safari/.test(ua))&&!bs.chrome&&nogc;
-		bs.prefix=bs.isWebkitCore?'webkit':bs.isGeckosCore?'Moz':bs.opera?'O':bs.isIECore?'ms':'';
+		bs.prefix=bs.isWebkitCore?'webkit':bs.isGeckosCore?'Moz':bs.opera?'O':bs.isIECore?'ms':'',
+		bs.hasTouch='ontouchstart' in W,
+		_SEV={
+			'vmousecancel':(bs.hasTouch?'touchcancel' : 'mouseout'),
+			'vmousedown':(bs.hasTouch?'touchstart' : 'mousedown'),
+			'vmousemove':(bs.hasTouch?'touchmove' : 'mousemove'),
+			'vmouseup':(bs.hasTouch?'touchend' : 'mouseup'),
+			'vmouseout':(bs.hasTouch?'touchleave' : 'mouseout'),
+		};
 	 	/**事件管理栈*/
 	 	//滑动事件统一绑定
 	 	function swipe(){
-			var a	='ontouchstart' in W,
-				ES	=a ? 'touchstart' : 'mousedown',
-				EM	=a ? 'touchmove' : 'mousemove',
-				EE	=a ? 'touchend' : 'mouseup',
-				EL	=a ? 'touchleave' : 'mouseout',
-				EC	=a ? 'touchcancel' : 'mouseup';
-
-			var st,et,sx,sy,x,y,tap,swipe;
-			document.addEventListener(ES,function(e){
-		         if (e.touches&&e.touches.length!=1){return;}
+			var st,et,sx,sy,x,y,tap,swipe,lto=800,endtouch=function(e){
+				if (tap && !swipe) {
+					et=Date.now()||new Date().getTime();
+					if ((et-st)<lto) {
+						$(e.target).trigger("tap",e);
+					}
+				}
+				clearInterval(lt);
+				tap=swipe=false;
+			},lt=null;
+			document.addEventListener(_SEV['vmousedown'],function(e){
+				 if (e.touches&&e.touches.length!=1){return;}
 		         var touch = e.touches?e.touches[0]:e;
 		         st=Date.now()||new Date().getTime();
 		         sx = touch.pageX;
 		         sy = touch.pageY;
 		         tap=true;swipe=false;
-		         $(e.target).trigger("swipeStart",e)
+		         lt=setInterval(function(){
+					et=Date.now()||new Date().getTime();
+					if ((et-st)>lto) {
+						clearInterval(lt);
+						$(e.target).trigger("longTap",e);
+					}
+		         },200);
 			});
-			document.addEventListener(EM,function(e){
+			document.addEventListener(_SEV['vmousemove'],function(e){
 				if (tap) {
-					swipe=true;
 					var touch =e.touches?e.touches[0]:e;
 					x=touch.pageX;y=touch.pageY;
-
 					var dx=Math.abs(x-sx),dy=Math.abs(y-sy),
 						t=(dx>2||dy>2)?(dx>dy?(x>sx?'Right':'Left'):(y>sy?'Down':'Up')):false;
 					if (t) {
+						swipe=true;
+						clearInterval(lt);
 						e.movement={startx:sx,starty:sy,x:x,y:y};
 						$(e.target).trigger("swipe",e)
 						$(e.target).trigger("swipe"+t,e)
 					};
 				}
 			});
-			document.addEventListener(EL,function(e){
-				if (tap) {
-					tap=false;
-			       	$(e.target).trigger("swipeEnd",e);
-				};
-			});
-			document.addEventListener(EE,function(e){
-				if (tap) {
-					tap=false;
-			       	$(e.target).trigger("swipeEnd",e);
-				};
-			});
-			document.addEventListener(EC,function(e){
-				if (tap) {
-					tap=false;
-			       	$(e.target).trigger("swipeEnd",e);
-				};
-			});
+			document.addEventListener(_SEV['vmouseup'],endtouch);
+			document.addEventListener(_SEV['vmouseout'],endtouch);
 		}
 	 	var _ES={},_swipe,
 		EVENTS={
@@ -1280,7 +1280,7 @@
 								}
 							},false);
 							//滑动事件绑定判断
-							if((_swipe==undefined)&&(_e.indexOf('swipe')>-1)){
+							if((_swipe==undefined)&&(/swipe|tap/.test(_e))){
 								_swipe=true;
 								swipe();
 							}

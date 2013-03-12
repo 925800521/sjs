@@ -5,7 +5,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 	<meta name="apple-mobile-web-app-capable" content="yes">
-	<script type="text/javascript" src="../sjs.js"></script>
+	<script type="text/javascript" src="../sjs.min.js"></script>
 	<style type="text/css">
 		div{
 			display: inline-block;
@@ -19,19 +19,25 @@
 </head>
 <body>
 	<div id="touch">
-		fsdgsdfgsdfgsdfgsdfgsdgf<br>asdfasdfsafdasfd
+		touchbox1
 	</div>
 	<hr>
 	<div id="touch1">
-		
+		touchbox2
 	</div>
 </body>
 <script type="text/javascript">
-$("div").on('swipe',function(e){
+$("div").on('vmousedown',function(){
+	console.log('vmousedown',e.type);
+}).on('swipe',function(e){
 	e.preventDefault();
 	// console.log(e.type,e.movement);
 	$(this).css("marginLeft",e.movement.x-e.movement.startx);
-});
+}).on('tap',function(e){
+	console.log('tap',e.type);
+}).on('longTap',function(e){
+	console.log('longTap',e.type);
+})
 
 
 </script>
