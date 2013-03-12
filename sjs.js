@@ -937,20 +937,20 @@
 					});
 				}
 			},
-			//查找
+			//查找 c是否只查找child
 			find:function(s,c){
 				var r=[];
-				for (var i = 0,l=this.length; i <l; i++) {
-					var d=this[i],cs=d.querySelectorAll(s);
-					M.each(cs,function(j,n){
-						(!c||n.parentNode==d)&&r.push(n);
-					});
-				}
+				this.each(function(d){
+					var cs=d.querySelectorAll(s);
+					for (var i = 0; i < cs.length; i++) {
+						(!c||cs[i].parentNode==d)&&r.push(cs[i]);
+					};
+				});
 				return M(uniqd(r));
 			},
 			children:function(s){
 				var _s=!s?'*':s;
-  				return this.find(_s,true);
+  				return this.find(_s);
 			},
 			parentsUntil:function(s,f){
 				return diru('parentNode',this,s,f);
