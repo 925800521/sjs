@@ -1044,10 +1044,10 @@
 			clone:function(e){
 				var ins=this,n=M(this.htmls());
 				return Event?n.each(function(d,i){
- 					for (var k in _ES) {
- 						var e=_ES[k][id(ins[i])];
+ 					for (var k in ES) {
+ 						var e=ES[k][id(ins[i])];
  						//事件会连动，删除一个另外一个也会删除
- 						e&&(_ES[k][id(d)]=e);  
+ 						e&&(ES[k][id(d)]=e);  
 					}
 				}):n;
 			},
@@ -1058,8 +1058,8 @@
 	 			return this.each(function(d) {
 	 				if ((!s||M(d).is(s))&&d.parentNode) {
 	 					d.parentNode.removeChild(d);
-	 					for (var k in _ES) {
-	 						delete _ES[k][id(d)];
+	 					for (var k in ES) {
+	 						delete ES[k][id(d)];
 	 					}
 	 				}
 				});
@@ -1203,7 +1203,7 @@
 		bs.safari=(/Safari/.test(ua))&&!bs.chrome&&nogc;
 		bs.prefix=bs.isWebkitCore?'webkit':bs.isGeckosCore?'Moz':bs.opera?'O':bs.isIECore?'ms':'',
 		bs.hasTouch='ontouchstart' in W,
-		_SEV={
+		SET={
 			'vmousecancel':(bs.hasTouch?'touchcancel' : 'mouseout'),
 			'vmousedown':(bs.hasTouch?'touchstart' : 'mousedown'),
 			'vmousemove':(bs.hasTouch?'touchmove' : 'mousemove'),
@@ -1223,7 +1223,7 @@
 				clearInterval(lt);
 				tap=swipe=false;
 			},lt=null;
-			document.addEventListener(_SEV['vmousedown'],function(e){
+			document.addEventListener(SET['vmousedown'],function(e){
 				 if (e.touches&&e.touches.length!=1){return;}
 		         var touch = e.touches?e.touches[0]:e;
 		         st=Date.now()||new Date().getTime();
@@ -1238,7 +1238,7 @@
 					}
 		         },200);
 			});
-			document.addEventListener(_SEV['vmousemove'],function(e){
+			document.addEventListener(SET['vmousemove'],function(e){
 				if (tap) {
 					var touch =e.touches?e.touches[0]:e;
 					x=touch.pageX;y=touch.pageY;
@@ -1253,14 +1253,14 @@
 					};
 				}
 			});
-			document.addEventListener(_SEV['vmouseup'],endtouch);
-			document.addEventListener(_SEV['vmouseout'],endtouch);
+			document.addEventListener(SET['vmouseup'],endtouch);
+			document.addEventListener(SET['vmouseout'],endtouch);
 		}
-	 	var _ES={},_swipe,
+	 	var ES={},_swipe,
 		EVENTS={
 			on:function(){
 				if (arguments.length>1){
-					var et=arguments[0],d=arguments[1],fn=arguments[2],es;					
+					var ets=arguments[0],d=arguments[1],fn=arguments[2],es;					
 					if (M.isFunction(d)) {
 						fn=d;d=null;
 					}else{
@@ -1268,19 +1268,18 @@
 							return this;
 						}
 					}
-					es=uniq(et.split(" "));
+					es=uniq(ets.split(" "));
 					for (var i = 0; i < es.length; i++) {
-						var _e=es[i];
-						if (typeof _ES[_e] === "undefined") {	
-							_ES[_e]={};
+						var et=es[i];
+						et=SET[et]?SET[et]:et;
+						if (typeof ES[et] === "undefined") {	
+							ES[et]={};
 							//事件委托
-							document.addEventListener(_e,function(e){
-								if(_ES[e.type]){
-									M(e.target).trigger(e.type,e);
-								}
-							},false);
+							document.addEventListener(et,function(e){
+ 								ES[e.type] && M(e.target).trigger(e.type,e);
+ 							},false);
 							//滑动事件绑定判断
-							if((_swipe==undefined)&&(/swipe|tap/.test(_e))){
+							if((_swipe==undefined)&&(/swipe|tap/.test(et))){
 								_swipe=true;
 								swipe();
 							}
@@ -1288,24 +1287,24 @@
 						//将本次选择器放入本对象的data中，便于以后循环获取根据不同selector绑定的事件
 						this.each(function(d){
 							var hash=id(d);
-							if (typeof _ES[_e][hash] === "undefined") {
-								_ES[_e][hash]=[];
+							if (typeof ES[et][hash] === "undefined") {
+								ES[et][hash]=[];
 							}
-							_ES[_e][hash].push({'fn':fn,'data':d,'cnt':0});
+							ES[et][hash].push({'fn':fn,'data':d,'cnt':0});
 						});
 					};
 				}
 				return this;
 			},
 			trigger:function(et){
-				if (et && _ES[et]) {
+				if (et && ES[et]) {
 					var _dels=[],e=arguments[arguments.length-1];;
 					//在本对象的事件选择器列表中获取所有绑定事件时使用过的选择器来检索事件
 					this.each(function(d){
 						//始终传入的最后一个参数为event(手动除外)
 						e=e.type?e:{'target':d};
 						e.type=et;
-						var hash=id(d),items=_ES[et][hash]||[];
+						var hash=id(d),items=ES[et][hash]||[];
 						for (var j=0,len = items.length; j <len; j++) {
 							e.data=items[j]['data'];
 							e.firecnt=++items[j]['cnt'];
@@ -1328,8 +1327,8 @@
 			off:function(et,fn){
 				this.each(function(d){
 					var hash=id(d),items;
-					if (et && _ES[et]) {
-						if (items=_ES[et][hash]) {
+					if (et && ES[et]) {
+						if (items=ES[et][hash]) {
 							if(fn){
 								var _dels=[];
 								for (var i =items.length - 1; i >= 0; i--) {
@@ -1339,15 +1338,15 @@
 								}
 								//数组分离删除，防止序号错乱
 								for (var i = _dels.length - 1; i >= 0; i--) {
-									_ES[et][hash].splice(i,1);
+									ES[et][hash].splice(i,1);
 								}
 							}else{
-								delete _ES[et][hash];
+								delete ES[et][hash];
 							}
 						}
 					}else{
 						//删除所有
-						M.each(_ES,function(i,d){
+						M.each(ES,function(i,d){
 							delete d[hash];
 						});
 					}

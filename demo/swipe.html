@@ -27,7 +27,7 @@
 	</div>
 </body>
 <script type="text/javascript">
-$("div").on('vmousedown',function(){
+$("div").on('vmousedown',function(e){
 	console.log('vmousedown',e.type);
 }).on('swipe',function(e){
 	e.preventDefault();
