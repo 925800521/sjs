@@ -1271,7 +1271,7 @@
 				}
 			},false);
 			document.addEventListener(SET['vmouseup'],endtouch,false);
-			document.addEventListener(SET['vmouseout'],endtouch,false);
+			// document.addEventListener(SET['vmouseout'],endtouch,false);
 		},
 		EVENTS={
 			on:function(){
@@ -1301,8 +1301,8 @@
 							}
 						}
 						//将本次选择器放入本对象的data中，便于以后循环获取根据不同selector绑定的事件
-						this.each(function(d){
-							var hash=id(d);
+						this.each(function(dom){
+							var hash=id(dom);
 							if (typeof ES[et][hash] === "undefined") {
 								ES[et][hash]=[];
 							}
@@ -1319,6 +1319,7 @@
 					this.each(function(d){
 						//始终传入的最后一个参数为event(手动除外)
 						e=e.type?e:{'target':d,'type':et};
+						//是否已经终止传播
 						if (e._bubble==false) {return false;};
 						var hash=id(d),items=ES[et][hash]||[];
 						for (var j=0,len = items.length; j <len; j++) {
