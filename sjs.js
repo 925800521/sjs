@@ -1230,16 +1230,20 @@
 				}
 	 	},
 	 	swipe=function(){
-			var st,et,sx,sy,x,y,tap,swipe,lto=800,endtouch=function(e){
-				if (tap && !swipe && e.type==SET['vmouseup']) {
+			var st,et,sx,sy,x,y,tap,swipe,lto=800,lt=null,target,endtouch=function(e){
+				if (tap && lt && !swipe && e.type==SET['vmouseup']) {
 					et=Date.now()||new Date().getTime();
 					if ((et-st)<lto) {
 						trig("tap",e);
 					}
 				}
 				clearInterval(lt);
+				if (tap && swipe) {
+					e.movement={startx:sx,starty:sy,x:x,y:y,target:target};
+					swipe&&trig("swipeEnd",e);
+				};
 				tap=swipe=false;
-			},lt=null;
+			};
 			document.addEventListener(SET['vmousedown'],function(e){
 				 if (e.touches&&e.touches.length!=1){return;}
 		         var touch = e.touches?e.touches[0]:e;
@@ -1259,14 +1263,14 @@
 				if (tap) {
 					var touch =e.touches?e.touches[0]:e;
 					x=touch.pageX;y=touch.pageY;
-					var dx=Math.abs(x-sx),dy=Math.abs(y-sy),
-						t=(dx>2||dy>2)?(dx>dy?(x>sx?'Right':'Left'):(y>sy?'Down':'Up')):false;
-					if (t) {
+					var dx=Math.abs(x-sx),dy=Math.abs(y-sy);
+					target=(dx>2||dy>2)?(dx>dy?(x>sx?'Right':'Left'):(y>sy?'Down':'Up')):false;
+					if (target) {
 						swipe=true;
 						clearInterval(lt);
-						e.movement={startx:sx,starty:sy,x:x,y:y};
+						e.movement={startx:sx,starty:sy,x:x,y:y,target:target};
 						trig("swipe",e)
-						trig("swipe"+t,e)
+						trig("swipe"+target,e)
 					};
 				}
 			},false);

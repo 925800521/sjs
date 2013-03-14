@@ -37,8 +37,98 @@ $("div").on('vmousedown',function(e){
 	console.log('tap',e.type);
 }).on('longTap',function(e){
 	console.log('longTap',e.type);
+}).on('swipeEnd',function(e){
+	console.log('swipeEnd',e);
 })
 
+ 
+var SET={
+			'vmousecancel':(false?'touchcancel' : 'mouseout'),
+			'vmousedown':(false?'touchstart' : 'mousedown'),
+			'vmousemove':(false?'touchmove' : 'mousemove'),
+			'vmouseup':(false?'touchend' : 'mouseup'),
+			'vmouseout':(false?'touchleave' : 'mouseout'),
+		};
+/*****另外一种实现***/
+var curSwipe,curMPos,gse=function(e){
+	return e.touches?e.touches.length!=1?false:e.touches[0]:e;
+};
+function Swipe(d,s){
+	var tap,swipe,spos,pos;
+	d.addEventListener(SET['vmousedown'],function(e){
+		var _e=gse(e);
+		if (_e) {
+			spos={x:_e.pageX,y:_e.pageY};
+			tap=true;swipe=false;
+			s.start && s.start.call(d,_e);
+		};
+	},false);
+	document.addEventListener(SET['vmousemove'],function(e){
+		var _e=gse(e);
+		if (_e&&tap) {
+			swipe=true;
+			pos={x:_e.pageX,y:_e.pageY};
+			_e.movement={startx:spos.x,starty:spos.y,x:pos.x,y:pos.y};
+			s.move && s.move.call(d,_e);
+		}
+	},false);
+	document.addEventListener(SET['vmouseup'],function(e){
+		var _e=gse(e);
+			// console.log('vmouseup',spos,d);
+		if (_e&&swipe) {
+			pos={x:_e.pageX,y:_e.pageY};
+			var dx=Math.abs(pos.x-spos.x),dy=Math.abs(pos.y-spos.y),
+				t=(dx>2||dy>2)?(dx>dy?(pos.x>spos.x?'right':'left'):(pos.y>spos.y?'down':'up')):false;
+			if (t) {
+				s[t]&&s[t].call(d,_e);
+				s.end&&s.end.call(d,_e);
+			};
+			tap=swipe=false;
+		}
+	},false);
+	d.addEventListener(SET['vmouseout'],function(e){
+		var _e=gse(e);
+		if (_e&&swipe) {
+			pos={x:_e.pageX,y:_e.pageY};
+			var dx=Math.abs(pos.x-spos.x),dy=Math.abs(pos.y-spos.y),
+				t=(dx>2||dy>2)?(dx>dy?(pos.x>spos.x?'right':'left'):(pos.y>spos.y?'down':'up')):false;
+			if (t) {
+				s[t]&&s[t].call(d,_e);
+				s.end&&s.end.call(d,_e);
+			};
+			tap=swipe=false;
+		}
+	},false);
+}
+$.fn['swipe']=function(s){
+	this.each(function(d){
+		Swipe(d,s);
+	});
+};
 
+// $("div").swipe({
+// 	start:function(e){
+// 		// console.log('start',this);
+// 	},
+// 	move:function(e){
+//  		// console.log('move');
+//  		$(this).css({'marginLeft',e.movement.x-e.movement.startx});
+// 	},
+// 	end:function(e){
+// 		// console.log('end',this);
+// 	},
+// 	up:function(e){
+// 		// console.log('up',this);
+// 	},
+// 	left:function(e){
+// 		// console.log('left',this);
+// 	},
+// 	right:function(e){
+// 		// console.log('right',this);
+// 	},
+// 	down:function(e){
+// 		// console.log('down',this);
+// 	}
+// });
 </script>
 </html>
