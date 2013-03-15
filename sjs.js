@@ -272,9 +272,9 @@
 				if (s) {
 					/**如果是函数则为ready*/
 					if (M.isFunction(s)) {
-						document.addEventListener("DOMContentLoaded", function(e) {
+						D.addEventListener("DOMContentLoaded", function(e) {
 							s.call(W,M);
-						}.false);
+						},false);
 					}
 					// M(DOMElement)
 					if (s.nodeType) {
