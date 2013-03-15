@@ -506,7 +506,7 @@
 		//获取元素数据
 		function gd(d,k){
 		 	var hash=id(d),ds=_domdatas[hash]||undefined;
-		 	return k==undefined?ds:(ds&&ds[k])?ds[k]:undefined;
+		 	return k==undefined?ds:(ds&&(ds[k]!=undefined))?ds[k]:undefined;
 		}
 		//获取dom的outhtml代码
 		function gh(d){
