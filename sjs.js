@@ -1201,9 +1201,9 @@
 		bs.ie=(bs.isIECore&&nogc);
 		bs.chrome=( /Chrome/i).test(ua)&&W.chrome&&nogc;
 		bs.safari=(/Safari/.test(ua))&&!bs.chrome&&nogc;
-		bs.prefix=bs.isWebkitCore?'webkit':bs.isGeckosCore?'Moz':bs.opera?'O':bs.isIECore?'ms':'',
-		bs.hasTouch='ontouchstart' in W,
-		SET={
+		bs.prefix=bs.isWebkitCore?'webkit':bs.isGeckosCore?'Moz':bs.opera?'O':bs.isIECore?'ms':'';
+		bs.hasTouch='ontouchstart' in W;
+		var SET={
 			'vmousecancel':(bs.hasTouch?'touchcancel' : 'mouseout'),
 			'vmousedown':(bs.hasTouch?'touchstart' : 'mousedown'),
 			'vmousemove':(bs.hasTouch?'touchmove' : 'mousemove'),
