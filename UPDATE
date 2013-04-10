@@ -27,3 +27,17 @@
 
 2013-2-28
 ---------增加了（swipe，swipeLeft,swipeRight,swipeUp,swipeDown）手指滑动事件类型
+
+2013-4-8
+sjs v1.1 发布
+
+1 重新设计并实现了事件管理模块
+2 添加了live，die的支持。（tap，longTap和swipe不支持live）
+3 swipeLeft，swipeRight，swipeTop，swipeBottom合并为swipe。具体方向可以从event.movement中取得
+4 增加 $.Event.swipecheckout属性来确认是否监控mouseout鼠标离开dom，默认为false，pc可以设置为true来开启该监控。
+5 $.Event.swipeStep可以用来设置swipe的精度，默认为2
+
+bug修复：
+swipe时，子元素的mouseover导致的swipe过程结束
+tap，longTap的冒泡实现。
+

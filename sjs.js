@@ -1,5 +1,6 @@
 /**
  * build by awen  71752352@qq.com
+ * version 1.1
  */
 ;(function(W,undefined){
 	var D=W.document,
@@ -60,14 +61,11 @@
 			trim:function(s){
 				return s.replace(/(^\s*)|(\s*$)/g, ""); 
 			},
-			/**核心啊，代码换效率*/
 			each:function(o,f){
-				if (UT.isArray(o)) {
-					for (var i = 0,l=o.length; i < l; i++) {
-						if(f.call(o,i,o[i])===false){
-							break;
-						}
-					}
+				if (o.forEach) {
+					o.some(function(d,i,o){
+						return f.call(o,i,d);
+					});
 				}else{
 					for (var k in o) {
 						if (o[k]!=undefined) {
@@ -258,350 +256,351 @@
 		},
 		//构建sjs对象
 		M=function(s,cxt){return new M.fn.init(s,cxt);};
-		//对象原型
-		M.fn=M.prototype={
-			constructor: M,
-			selector:'',
-			sjs:'sjs',
-			length: 0,
-			init:function(s,cxt){
-				if (W==this) {return new M(s,cxt)};
-				//是sjs对象则返回原sjs对象
-				if (isS(s)) {return s;};
-				this.context=cxt?cxt:D;
-				if (s) {
-					/**如果是函数则为ready*/
-					if (M.isFunction(s)) {
-						D.addEventListener("DOMContentLoaded", function(e) {
-							s.call(W,M);
-						},false);
-					}
-					// M(DOMElement)
-					if (s.nodeType) {
-						this[0] = s;
-						this.length = 1;
-						//dom对象的唯一标志
-						id(s);
-					}
-					//doms数组
-					if (UT.isArray(s)) {
-						UT.merge(this,s);
-					}
-					// M(string)
-					if ( typeof s === "string" ) {
-						var ds;
-						if ((ds=sh.exec(s))&&ds[1]) {
-							return M(cds(ds[1]));
-						} else {
-							ds=this.context.querySelectorAll(s);
-							this.length = ds.length;
-							for (var i = 0,len=this.length; i<len; i++) {
-								id(ds[i]);
-								this[i]=ds[i];
-							}
-							this.selector=s;
+	//对象原型
+	M.fn=M.prototype={
+		constructor: M,
+		selector:'',
+		sjs:'sjs',
+		length: 0,
+		init:function(s,cxt){
+			if (W==this) {return new M(s,cxt)};
+			//是sjs对象则返回原sjs对象
+			if (isS(s)) {return s;};
+			this.context=cxt?cxt:D;
+			if (s) {
+				/**如果是函数则为ready*/
+				if (UT.isFunction(s)) {
+					D.addEventListener("DOMContentLoaded", function(e) {
+						s.call(W,M);
+					},false);
+				}
+				// M(DOMElement)
+				if (s.nodeType) {
+					this[0] = s;
+					this.length = 1;
+					//dom对象的唯一标志
+					id(s);
+				}
+				//doms数组
+				if (UT.isArray(s)) {
+					UT.merge(this,s);
+				}
+				// M(string)
+				if ( typeof s === "string" ) {
+					var ds;
+					if ((ds=sh.exec(s))&&ds[1]) {
+						return M(cds(ds[1]));
+					} else {
+						ds=this.context.querySelectorAll(s);
+						this.length = ds.length;
+						for (var i = 0,len=this.length; i<len; i++) {
+							id(ds[i]);
+							this[i]=ds[i];
 						}
+						this.selector=s;
 					}
 				}
-			},
-			size:function(){
-				return this.length;
-			},
-			get:function(i){
-				return i==undefined?this:this[i];
-			},
-			index:function(){
-				var d=this[0],cs=d.parentNode.children;
-				return M.inArray(d,cs);
+			}
+		},
+		size:function(){
+			return this.length;
+		},
+		get:function(i){
+			return i==undefined?this:this[i];
+		},
+		index:function(){
+			var d=this[0],cs=d.parentNode.children;
+			return M.inArray(d,cs);
+		}
+	}
+	M.fn.init.prototype = M.fn;
+	//主要扩展方法
+	M.extend=M.fn.extend=function(){
+		var to=arguments[0]||{},options,len=arguments.length,deep=false,ci=0,src,copy;
+		//第一个参数如果是boolean型的话，则代表是否深度复制，扩充对象为第二个参数
+		if(typeof to === "boolean") {
+			ci++;
+			deep=true;
+			to=arguments[ci]||{};
+		}
+		//to类型检测
+		if (typeof to != 'object') {
+			to={};
+		}
+		//如果只有一个object对象则扩充对象为本身
+		if (len==ci+1) {
+			to=this;
+		}
+		//循环所有要继承的对象
+		for (;ci<len;ci++){
+			 if ((options=arguments[ci])!=null) {
+			 	for (var key in options) {
+			 		src=to[key];
+			 		copy=options[key];
+			 		//防止两个对象互相包含，造成无休止循环
+			 		if (to==copy) {
+			 			continue;
+			 		}
+			 		//深度复制
+			 		if (deep&&copy&&(UT.isArray(copy)||UT.isPlainObject(copy))) {
+			 			if (UT.isPlainObject(copy)) {
+			 				src= src && UT.isArray(src) ? src : {};
+			 			}
+			 			if (UT.isArray(copy)) {
+			 				src= src && UT.isPlainObject(src) ? src : [];
+			 			}
+			 			to[key] = M.extend( deep, src, copy );
+			 		}else{
+			 			to[key]=copy;
+			 		}
+			 	};
+			 };
+		}
+		return to;
+	}
+	///////////////////////////////////常用函数
+	//ajax回调函数绑定
+	function ajaxcall(xhr,s){
+		if (!s || !xhr) {return false;};
+		if (s.success) {
+			xhr.onload=function(e){
+				var res=null;
+				switch(s.dataType){
+					case 'json':
+					case 'script':
+						res=eval(this.responseText);
+					break;
+					default:
+						res=this.response;
+					break;
+				}
+				s.success.call(s.context,res,this);
 			}
 		}
-		M.fn.init.prototype = M.fn;
-		//主要扩展方法
-		M.extend=M.fn.extend=function(){
-			var to=arguments[0]||{},options,len=arguments.length,deep=false,ci=0,src,copy;
-			//第一个参数如果是boolean型的话，则代表是否深度复制，扩充对象为第二个参数
-			if(typeof to === "boolean") {
-				ci++;
-				deep=true;
-				to=arguments[ci]||{};
-			}
-			//to类型检测
-			if (typeof to != 'object') {
-				to={};
-			}
-			//如果只有一个object对象则扩充对象为本身
-			if (len==ci+1) {
-				to=this;
-			}
-			//循环所有要继承的对象
-			for (;ci<len;ci++){
-				 if ((options=arguments[ci])!=null) {
-				 	for (var key in options) {
-				 		src=to[key];
-				 		copy=options[key];
-				 		//防止两个对象互相包含，造成无休止循环
-				 		if (to==copy) {
-				 			continue;
-				 		}
-				 		//深度复制
-				 		if (deep&&copy&&(UT.isArray(copy)||UT.isPlainObject(copy))) {
-				 			if (UT.isPlainObject(copy)) {
-				 				src= src && UT.isArray(src) ? src : {};
-				 			}
-				 			if (UT.isArray(copy)) {
-				 				src= src && UT.isPlainObject(src) ? src : [];
-				 			}
-				 			to[key] = M.extend( deep, src, copy );
-				 		}else{
-				 			to[key]=copy;
-				 		}
-				 	};
-				 };
-			}
-			return to;
-		}
-		///////////////////////////////////常用函数
-		//ajax回调函数绑定
-		function ajaxcall(xhr,s){
-			if (!s || !xhr) {return false;};
-			if (s.success) {
-				xhr.onload=function(e){
-					var res=null;
-					switch(s.dataType){
-						case 'json':
-						case 'script':
-							res=eval(this.responseText);
-						break;
-						default:
-							res=this.response;
-						break;
-					}
-					s.success.call(s.context,res,this);
-				}
-			}
-			if (s.abort) {
-				xhr.onabort=function(e){
-					s.abort.call(s.context,this);
-				}
-			}
-			if (s.error) {
-				xhr.onerror=function(e){
-					s.error.call(s.context,this);
-				}
-			}
-			if (s.beforeSend) {
-				xhr.onloadstart=function(e){
-					s.beforeSend.call(s.context,this);
-				}
-			}
-			if (s.complete) {
-				xhr.onloadend=function(e){
-					s.complete.call(s.context,this);
-				}
-			}
-			if (s.progress) {
-				xhr.onprogress=function(e){
-					s.progress.call(s.context,e);
-				}
-			}
-			if (s.upProgress){
-				xhr.upload.onprogress=function(e){
-					 s.upProgress.call(s.context,e);
-				}
+		if (s.abort) {
+			xhr.onabort=function(e){
+				s.abort.call(s.context,this);
 			}
 		}
-		//将数组或者字符串 统一成数组
-		function ba(s,b){
-			b=b?b:' ';
-			return s==undefined?s:M.isArray(s)?s:s.split(b);
+		if (s.error) {
+			xhr.onerror=function(e){
+				s.error.call(s.context,this);
+			}
 		}
-		//根据字符串创建dom数组,f=true的话 返回documentfragment对象
-		function cds(s,f){
-			var tmp=D.createElement('div');
-				tmp.innerHTML=s;
-			if (f===true) {
-				var doc=D.createDocumentFragment(),c=tmp.firstChild;
-				while(c){
-					var d=c,c=c.nextSibling;
-					doc.appendChild(d);
+		if (s.beforeSend) {
+			xhr.onloadstart=function(e){
+				s.beforeSend.call(s.context,this);
+			}
+		}
+		if (s.complete) {
+			xhr.onloadend=function(e){
+				s.complete.call(s.context,this);
+			}
+		}
+		if (s.progress) {
+			xhr.onprogress=function(e){
+				s.progress.call(s.context,e);
+			}
+		}
+		if (s.upProgress){
+			xhr.upload.onprogress=function(e){
+				 s.upProgress.call(s.context,e);
+			}
+		}
+	}
+	//将数组或者字符串 统一成数组
+	function ba(s,b){
+		b=b?b:' ';
+		return s==undefined?s:M.isArray(s)?s:s.split(b);
+	}
+	//根据字符串创建dom数组,f=true的话 返回documentfragment对象
+	function cds(s,f){
+		var tmp=D.createElement('div');
+			tmp.innerHTML=s;
+		if (f===true) {
+			var doc=D.createDocumentFragment(),c=tmp.firstChild;
+			while(c){
+				var d=c,c=c.nextSibling;
+				doc.appendChild(d);
+			}
+			return doc;
+		}else{
+			return AP.slice.call(tmp.children,0);
+		}
+	}
+	//将CSS驼峰属性名转换为原本属性名
+	function cnes(s) {
+		s.replace(/([A-Z])/g,"-$1").toLowerCase();
+		return s.replace(/^(webkit-|moz-|o-|ms-)/,'-$1');
+	}
+	//将CSS属性名改为驼峰
+	function cne(s) {
+		 return s.replace(/-[a-z]/gi,function (c) {
+		  return c.charAt(1).toUpperCase();
+		 });
+	}
+	//删除classname
+	function dc(d,c){
+		if (c&&hc(d,c)) {
+			var r=new RegExp('(\\s|^)'+c);
+			d.className=d.className.replace(r,'');
+		}
+	}
+	//删除数据
+	function dd(d,k){
+		var hash=id(d),ds=_domdatas[hash]||undefined;
+		if (ds){
+			if(k){
+				if (_domdatas[hash][k]) {
+					delete _domdatas[hash][k];
 				}
-				return doc;
 			}else{
-				return AP.slice.call(tmp.children,0);
+				delete _domdatas[hash];
 			}
 		}
-		//将CSS驼峰属性名转换为原本属性名
-		function cnes(s) {
-			s.replace(/([A-Z])/g,"-$1").toLowerCase();
-			return s.replace(/^(webkit-|moz-|o-|ms-)/,'-$1');
-		}
-		//将CSS属性名改为驼峰
-		function cne(s) {
-			 return s.replace(/-[a-z]/gi,function (c) {
-			  return c.charAt(1).toUpperCase();
-			 });
-		}
-		//删除classname
-		function dc(d,c){
-			if (c&&hc(d,c)) {
-				var r=new RegExp('(\\s|^)'+c);
-				d.className=d.className.replace(r,'');
+	}
+	/**借用jquery的，挺精简的
+	 * 从一个元素出发，迭代检索某个方向上的所有元素并记录，直到与遇到document对象或遇到until匹配的元素
+	 * 迭代条件（简化）：cur.nodeType !== 9 && !M( cur ).is( until ) 
+	 * elem		起始元素
+	 * dir		迭代方向，可选值（Node 对象的属性）：如parentNode nextSibling previousSibling
+	 * until	选择器表达式，如果遇到until匹配的元素，迭代终止
+	 * only 	是否只返回第一个符合要求的
+	 */
+	function dir(elem,dir,until,only){
+		var matched = [],cur = elem[ dir ];
+		while ( cur && cur.nodeType !== 9 && (!until|| cur.nodeType !== 1 || !M( cur ).is( until ))) {
+			if ( cur.nodeType === 1 ) {
+				if (only) {return cur;}
+				matched.push( cur );
 			}
+			cur = cur[dir];
 		}
-		//删除数据
-		function dd(d,k){
-			var hash=id(d),ds=_domdatas[hash]||undefined;
-			if (ds){
-				if(k){
-					if (_domdatas[hash][k]) {
-						delete _domdatas[hash][k];
-					}
-				}else{
-					delete _domdatas[hash];
-				}
-			}
+		return matched;
+	}
+	/*~parentsUntil,nextUntil,prevUntil*/
+	function diru(type,o,s,f){
+		var ps=[],i=0,l=o.length,r;
+		for(;i<l;i++){
+			M.merge(ps,dir(o[i],type,s));
 		}
-		/**借用jquery的，挺精简的
-		 * 从一个元素出发，迭代检索某个方向上的所有元素并记录，直到与遇到document对象或遇到until匹配的元素
-		 * 迭代条件（简化）：cur.nodeType !== 9 && !M( cur ).is( until ) 
-		 * elem		起始元素
-		 * dir		迭代方向，可选值（Node 对象的属性）：如parentNode nextSibling previousSibling
-		 * until	选择器表达式，如果遇到until匹配的元素，迭代终止
-		 * only 	是否只返回第一个符合要求的
-		 */
-		function dir(elem,dir,until,only){
-			var matched = [],cur = elem[ dir ];
-			while ( cur && cur.nodeType !== 9 && (!until|| cur.nodeType !== 1 || !M( cur ).is( until ))) {
-				if ( cur.nodeType === 1 ) {
-					if (only) {return cur;}
-					matched.push( cur );
-				}
-				cur = cur[dir];
-			}
-			return matched;
+		r=M(uniqd(ps));
+		return f?r.filter(f):r;
+	}
+	/*~parent,next,prev*/
+	function dirs(type,o,s){
+		var ps=[],i=0,l=o.length,r;
+		for(;i<l;i++){
+			var p=o[i][type];
+			p&&ps.push(p);
 		}
-		/*~parentsUntil,nextUntil,prevUntil*/
-		function diru(type,o,s,f){
-			var ps=[],i=0,l=o.length,r;
-			for(;i<l;i++){
-				M.merge(ps,dir(o[i],type,s));
-			}
-			r=M(uniqd(ps));
-			return f?r.filter(f):r;
-		}
-		/*~parent,next,prev*/
-		function dirs(type,o,s){
-			var ps=[],i=0,l=o.length,r;
-			for(;i<l;i++){
-				var p=o[i][type];
-				p&&ps.push(p);
-			}
-			r=M(uniqd(ps));
- 			return s?r.filter(s):r;
-		}
-		//获取class值
-		function gc(d,n){
-			return W.getComputedStyle(d).getPropertyValue(cnes(n))||'';
-		}
-		//获取元素数据
-		function gd(d,k){
-		 	var hash=id(d),ds=_domdatas[hash]||undefined;
-		 	return k==undefined?ds:(ds&&(ds[k]!=undefined))?ds[k]:undefined;
-		}
-		//获取dom的outhtml代码
-		function gh(d){
-			if (d.outerHTML) {return d.outerHTML};
-			var t=D.createElement('div');t.appendChild(d.cloneNode(true));
-			return t.innerHTML;
-		}
-		//检测是否含有className
-		function hc(d,c){
-			var r=new RegExp('(\\s|^)'+c+'(\\s|$)');
-			return r.test(d.className);
-		}
-		//获取dom对象的唯一标志,e强制重新获取
-		function id(d,e){
-			return (e||!d._hash)?(d._hash=UT.uniqueId()):d._hash;
-		}
-		// 判断是否sjs对象
-		function isS(o){
-			return o&&o.sjs!=undefined;
-		}
-		//sjs对象整合到documentFragment对象中病返回
-		function stodf(o){
-			var d=D.createDocumentFragment();
-			for (var i = 0; i < o.length; i++) {
-				o[i]
-			};
-			return d;
-		}
-		//parent child操作  r是操作的类型 0,append（默认）,1perpend,2after,3before,4 replaceWith
-		function dom(o,s,r){
-			if (s&&o.length>0){
-				var isf=M.isFunction(s),isstr=M.isString(s),iss=isS(s),_s=(!isstr&&!isf)?M(s):null,rs=[];
- 				o.each(function(d,i){
- 					var p=r>1?d.parentNode:null;
-					if (_s) {
-						//dom,sjs会保留事件
- 						var cs=i>0?_s.clone(true):_s,
- 						//集成为docfragment
- 						df=D.createDocumentFragment();
- 						cs.each(function(m){df.appendChild(m)});
+		r=M(uniqd(ps));
+			return s?r.filter(s):r;
+	}
+	//获取class值
+	function gc(d,n){
+		return W.getComputedStyle(d).getPropertyValue(cnes(n))||'';
+	}
+	//获取元素数据
+	function gd(d,k){
+	 	var hash=id(d),ds=_domdatas[hash]||undefined;
+	 	return k==undefined?ds:(ds&&(ds[k]!=undefined))?ds[k]:undefined;
+	}
+	//获取dom的outhtml代码
+	function gh(d){
+		if (d.outerHTML) {return d.outerHTML};
+		var t=D.createElement('div');t.appendChild(d.cloneNode(true));
+		return t.innerHTML;
+	}
+	//检测是否含有className
+	function hc(d,c){
+		var r=new RegExp('(\\s|^)'+c+'(\\s|$)');
+		return r.test(d.className);
+	}
+	//获取dom对象的唯一标志,e强制重新获取
+	function id(d,e){
+		return (e||!d._hash)?(d._hash=UT.uniqueId()):d._hash;
+	}
+	// 判断是否sjs对象
+	function isS(o){
+		return o&&o.sjs!=undefined;
+	}
+	//sjs对象整合到documentFragment对象中病返回
+	function stodf(o){
+		var d=D.createDocumentFragment();
+		for (var i = 0; i < o.length; i++) {
+			o[i]
+		};
+		return d;
+	}
+	//parent child操作  r是操作的类型 0,append（默认）,1perpend,2after,3before,4 replaceWith
+	function dom(o,s,r){
+		if (s&&o.length>0){
+			var isf=M.isFunction(s),isstr=M.isString(s),iss=isS(s),_s=(!isstr&&!isf)?M(s):null,rs=[];
+				o.each(function(d,i){
+					var p=r>1?d.parentNode:null;
+				if (_s) {
+					//dom,sjs会保留事件
+						var cs=i>0?_s.clone(true):_s,
+						//集成为docfragment
+						df=D.createDocumentFragment();
+						cs.each(function(m){df.appendChild(m)});
 
-						((r==1) && (d.insertBefore(df,d.firstChild))) ||
-						((r==2) && p && (((p.lastChild==d)&&p.appendChild(df))||p.insertBefore(df,d.nextSibling)))||
-						((r==3) && p && p.insertBefore(df,d))||
-						((r==4) && p && p.replaceChild(df,d))||
-						d.appendChild(df);
-						iss&&(i>0)&&rs.push(cs);
- 					}else{
-						var h=isf?s.call(d,i,d.innerHTML):s,h=r>1?cds(s,true):h;
-						((r==1)&&(d.innerHTML=h+d.innerHTML))||
-						((r==2) && p && (((p.lastChild==d)&&p.appendChild(h))||p.insertBefore(h,d.nextSibling)))||
-						((r==3) && p && p.insertBefore(h,d))||
-						((r==4) && p && p.replaceChild(h,d))||
-						(d.innerHTML+=h);
-					}
-				});
-				if (iss) {
-					for (var i = 0; i < rs.length; i++) {
-						s.add(rs[i]);
-					}
+					((r==1) && (d.insertBefore(df,d.firstChild))) ||
+					((r==2) && p && (((p.lastChild==d)&&p.appendChild(df))||p.insertBefore(df,d.nextSibling)))||
+					((r==3) && p && p.insertBefore(df,d))||
+					((r==4) && p && p.replaceChild(df,d))||
+					d.appendChild(df);
+					iss&&(i>0)&&rs.push(cs);
+					}else{
+					var h=isf?s.call(d,i,d.innerHTML):s,h=r>1?cds(s,true):h;
+					((r==1)&&(d.innerHTML=h+d.innerHTML))||
+					((r==2) && p && (((p.lastChild==d)&&p.appendChild(h))||p.insertBefore(h,d.nextSibling)))||
+					((r==3) && p && p.insertBefore(h,d))||
+					((r==4) && p && p.replaceChild(h,d))||
+					(d.innerHTML+=h);
+				}
+			});
+			if (iss) {
+				for (var i = 0; i < rs.length; i++) {
+					s.add(rs[i]);
 				}
 			}
-			return o;
 		}
-		//设置元素数据
-		function sd(d,k,v){
-			var hash=id(d);
-			if (!_domdatas[hash]) {_domdatas[hash]={};}
-			_domdatas[hash][k]=v;
+		return o;
+	}
+	//设置元素数据
+	function sd(d,k,v){
+		var hash=id(d);
+		if (!_domdatas[hash]) {_domdatas[hash]={};}
+		_domdatas[hash][k]=v;
+	}
+	//常规数组去重
+	function uniq(o){
+		var j={},r=[];
+		for (var i = 0; i < o.length; i++) {
+			j[o[i]]=o[i];
 		}
-		//常规数组去重
-		function uniq(o){
-			var j={},r=[];
-			for (var i = 0; i < o.length; i++) {
-				j[o[i]]=o[i];
-			}
-			M.each(j,function(n,i){
-				r.push(i);
-			});
-			return r;
+		M.each(j,function(n,i){
+			r.push(i);
+		});
+		return r;
+	}
+	//dom数组去重
+	function uniqd(o){
+		var ret = [], done = {},i=0,l=o.length;
+		for(;i<l;i++){
+			var d=o[i],j=id(d);
+			if (!done[j]) {
+				done[j]=true;
+				ret.push(d);
+			};
 		}
-		//dom数组去重
-		function uniqd(o){
-			var ret = [], done = {},i=0,l=o.length;
-			for(;i<l;i++){
-				var d=o[i],j=id(d);
-				if (!done[j]) {
-					done[j]=true;
-					ret.push(d);
-				};
-			}
-			return ret;
-		}		
-		//dom扩展
-		var _domdatas={},DOMS={
+		return ret;
+	}		
+	//dom扩展
+	var _domdatas={},
+		DOMS={
 	 		data:function(k,v){
 	 			if (this.length>0) {
 					var len=arguments.length;
@@ -625,13 +624,13 @@
 	 				name=name.split(" ");
 	 			}
 	 			return this.each(function(d){
- 					if (M.isArray(name)) {
- 						M.each(name,function(i,n){
- 							dd(d,n)
+						if (M.isArray(name)) {
+							M.each(name,function(i,n){
+								dd(d,n)
 		 				});
 		 			}else{
 		 				dd(d);
- 					}
+						}
 	 			});
 	 		},
 	 		html:function(s){
@@ -868,7 +867,7 @@
 			toggleClass:function(c){
 				if (c==undefined||this.length==0) {return this};
 				var cs=M.isFunction(c)?null:ba(c);
- 				return this.each(function(d,i){
+					return this.each(function(d,i){
 					var sc=M.trim(d.className),cn='';
 					if (cs==null) {
 						if(cn=c.call(d,i,sc)){
@@ -893,7 +892,7 @@
 			hasClass:function(c){
 				var r=false;
 				this.each(function(d){
- 					return !(r=hc(d,c));
+						return !(r=hc(d,c));
 				});
 				return r;
 			},
@@ -950,7 +949,7 @@
 			},
 			children:function(s){
 				var _s=!s?'*':s;
-  				return this.find(_s);
+					return this.find(_s);
 			},
 			parentsUntil:function(s,f){
 				return diru('parentNode',this,s,f);
@@ -1010,7 +1009,7 @@
 			},
 			appendTo:function(s){
 				dom(M(s),this);
- 				return this;
+					return this;
 			},
 			prepend:function(s){
 				return dom(this,s,1);
@@ -1042,25 +1041,32 @@
 				return this;
 			},
 			clone:function(e){
-				var ins=this,n=M(this.htmls());
-				return Event?n.each(function(d,i){
- 					for (var k in ES) {
- 						var e=ES[k][id(ins[i])];
- 						//事件会连动，删除一个另外一个也会删除
- 						e&&(ES[k][id(d)]=e);  
+				var ins=this,n=M(this.htmls()),D=ES.data;
+				return	n.each(function(d,i){
+					var o=M(d);
+					for (var k in D) {
+						var s=id(ins[i]),e=D[k]?D[k][s]:null;
+						if (/swipe|tap/i.test(k)) {
+							e&&(D[k][id(d)]=e);
+						}else{
+							e&&e.forEach(function(m){
+								o.on(k,m.data,m.fn);
+							});
+						}
 					}
-				}):n;
+				});
 			},
 			empty:function(){
 				return this.html('');
 			},
 			remove:function(s){
 	 			return this.each(function(d) {
-	 				if ((!s||M(d).is(s))&&d.parentNode) {
-	 					d.parentNode.removeChild(d);
-	 					for (var k in ES) {
-	 						delete ES[k][id(d)];
+	 				var o=M(d),D=ES.data;
+	 				if ((!s||o.is(s))&&d.parentNode) {
+	 					for (var k in D) {
+	 						D[k][id(d)]&&o.off(k);
 	 					}
+	 					d.parentNode.removeChild(d);
 	 				}
 				});
 			}
@@ -1091,7 +1097,7 @@
 				var _t=new Date().getTime(),_s=s?M.extend(_s,s):_s,
 					xhr=new XMLHttpRequest,url=url.indexOf('?')>-1?url+'&':url+'?',postd=_s.data;
 					url+=_s.cache?'':'_t='+_t;
- 					if ((_s.type).toLowerCase()=='get') {
+						if ((_s.type).toLowerCase()=='get') {
 						url+=M.JSON.toQuery(_s.data);
 						postd=null;
 					}
@@ -1110,8 +1116,8 @@
 				return xhr;
 			},
 			ajaxForm:function(sel,s){
- 				$(sel).each(function(d){
- 					if (d.nodeName.toLowerCase()=='form') {
+					$(sel).each(function(d){
+						if (d.nodeName.toLowerCase()=='form') {
 						var fd = new FormData(d),xhr=new XMLHttpRequest();
 						if (s && s.data) {
 							for (var k in s.data) {
@@ -1121,8 +1127,8 @@
 						ajaxcall(xhr,s);
 						xhr.open(d.method,d.action);
 						xhr.send(fd);
- 					}
- 				});
+						}
+					});
 			},
 			get:function(u,d,f,t){
 				if (!u) {return false;}
@@ -1170,14 +1176,14 @@
 	                return UT.isFunction(f)?f():f;
 	            }
 			} catch (e) {}
-            return '';
-        },
+	        return '';
+	    },
 		bs={
 			isAndroid  		:(/Android/i).test(ua),
-   			isIPad  		:(/ipad/i).test(ua),
-   			isIPhone  		:(/iphone os/i).test(ua),
-   			isWMobile		:(/Windows mobile/i).test(ua),
-   			isMobile        :(/mobile|wap/).test(ua),
+			isIPad  		:(/ipad/i).test(ua),
+			isIPhone  		:(/iphone os/i).test(ua),
+			isWMobile		:(/Windows mobile/i).test(ua),
+			isMobile        :(/mobile|wap/).test(ua),
 
 			isIECore		:(/Trident/i).test(ua),
 			isWebkitCore	:(/webkit/i).test(ua),
@@ -1198,381 +1204,466 @@
 			baidu			:(/BIDUBrowser/i).test(ua)||gwe('GetVersion')=='baidubrowser'
 		},
 		nogc=!bs.sougou&&!bs.maxthon&&!bs.qq&&!bs.uc&&!bs.liebao&&!bs.baidu&&!bs.se360;
-		bs.ie=(bs.isIECore&&nogc);
-		bs.chrome=( /Chrome/i).test(ua)&&W.chrome&&nogc;
-		bs.safari=(/Safari/.test(ua))&&!bs.chrome&&nogc;
-		bs.prefix=bs.isWebkitCore?'webkit':bs.isGeckosCore?'Moz':bs.opera?'O':bs.isIECore?'ms':'';
-		bs.hasTouch='ontouchstart' in W;
-		var SET={
-			'vmousecancel':(bs.hasTouch?'touchcancel' : 'mouseout'),
-			'vmousedown':(bs.hasTouch?'touchstart' : 'mousedown'),
-			'vmousemove':(bs.hasTouch?'touchmove' : 'mousemove'),
-			'vmouseup':(bs.hasTouch?'touchend' : 'mouseup'),
-			'vmouseout':(bs.hasTouch?'touchleave' : 'mouseout'),
+	bs.ie=(bs.isIECore&&nogc);
+	bs.chrome=( /Chrome/i).test(ua)&&W.chrome&&nogc;
+	bs.safari=(/Safari/.test(ua))&&!bs.chrome&&nogc;
+	bs.prefix=bs.isWebkitCore?'webkit':bs.isGeckosCore?'Moz':bs.opera?'O':bs.isIECore?'ms':'';
+	bs.hasTouch='ontouchstart' in W;
+	/**事件管理栈*/
+	var SET={
+		'vmousecancel':(bs.hasTouch?'touchcancel' : 'mouseout'),
+		'vmousedown':(bs.hasTouch?'touchstart' : 'mousedown'),
+		'vmousemove':(bs.hasTouch?'touchmove' : 'mousemove'),
+		'vmouseup':(bs.hasTouch?'touchend' : 'mouseup'),
+		'vmouseout':(bs.hasTouch?'touchleave' : 'mouseout'),
 		},
-	 	/**事件管理栈*/
-	 	//滑动事件统一绑定
-	 	ES={},
-	 	_swipe=false,
-	 	trig=function(et,e){
-	 		var _E=M.extend({'_bubble':true},e);
-	 			_E.type=et;
-				_E.stopPropagation=function(){
-					_E._bubble=false;
-					e.stopPropagation();
-				};
-				_E.preventDefault=function(){
-					e.preventDefault();
-				}
-				ES[et] && M(e.target).trigger(et,_E);
-				if (_E._bubble) {
-					M(e.target).parents().trigger(et,_E);
-				}
-	 	},
-	 	swipe=function(){
-			var st,et,sx,sy,x,y,tap,swipe,lto=800,lt=null,target,endtouch=function(e){
-				if (tap && lt && !swipe && e.type==SET['vmouseup']) {
-					et=Date.now()||new Date().getTime();
-					if ((et-st)<lto) {
-						trig("tap",e);
-					}
-				}
-				clearInterval(lt);
-				if (tap && swipe) {
+		// swipe tap 扩展    不支持live
+		tap,sx,sy,px,py,target,				//手势相关
+		lto=800,lt=null,st,							//长点击监控相关
+		// 全局down监控
+		gtapdown=function(e){
+			tap = true;
+			var touch = e.touches?e.touches[0]:e;
+				sx=px=touch.pageX;sy=py=touch.pageY;
+				// 长连接监控，缺点不支持终止冒泡，有点，不用每个元素单独监控，增加效率
+				st=Date.now();
+				lt=setInterval(function(){
+					if (lt&&(Date.now()-st)>lto) {
+			 			clearInterval(lt);lt=null;
+			 			e.stopPropagation=function(){
+			 				this._sbunble=true;
+			 			};
+			 			ES.touchs.forEach(function(d,i){
+							!e._sbunble&&M.Event.trigger.call(d,e,'longTap');
+			 			});
+					};
+				},200);
+				M(document).on('vmousemove',gtapmove);
+		},
+		// 全局move监控
+		gtapmove=function(e){
+			if (lt) {clearInterval(lt);lt=null};
+			//屏蔽多点触控
+			if (tap) {
+				var touch = e.touches?e.touches[0]:e,x=touch.pageX,y=touch.pageY,dx=Math.abs(x-px),dy=Math.abs(y-py);
+			    // 优化执行  如果位移小于限制值则不进行任何操作
+				if (dx<ES.swipeStep && dy<ES.swipeStep) {return};
+ 				// 判断方向
+				target=dx>dy?(x>sx?'right':'left'):(y>sy?'down':'up');
+				px=x;py=y;
+				// trigger当前处于监控列表的元素,1.1版本开始过程函数只会处理swipe绑定，没有了swipeleft,Right，Top,Down
+				ES.touchs.forEach(function(d,i){
 					e.movement={startx:sx,starty:sy,x:x,y:y,target:target};
-					swipe&&trig("swipeEnd",e);
+					M.Event.trigger.call(d,e,'swipe');
+				});
+			}
+		},
+		// 全局up监控
+		gtapup=function(e){
+			e.stopPropagation=function(){
+ 				this._sbunble=true;
+ 			};
+			if (lt) {
+				clearInterval(lt);lt=null;
+	 			ES.touchs.forEach(function(d,i){
+					!e._sbunble&&M.Event.trigger.call(d,e,'tap');
+	 			});
+			}else if(target){
+				e.movement={startx:sx,starty:sy,x:px,y:py,target:target};
+				ES.touchs.forEach(function(d,i){
+					!e._sbunble&&M.Event.trigger.call(d,e,'swipeEnd');
+	 			});
+			}
+			ES.touchs=[];tap=false;
+			M(document).off('vmousemove',gtapmove)
+		},
+		//初始化全局手势操作
+		initTouch=function(){
+			M(document).on('vmousedown',gtapdown).on('vmouseup',gtapup);
+ 		},
+ 		// dom的down操作
+ 		tapdown=function(e){
+			e.preventDefault();
+ 			ES.touchs.push(this);
+ 		},
+ 		// dom的out操作
+ 		tapout=function(e){
+ 			if(tap && M(e.relatedTarget).parents(this).length==0){
+ 				M.Event.trigger.call(this,e,'swipeEnd');
+				UT.remove(ES.touchs,this);
+			}
+ 		},
+	 	//ES[type][domid]=[ES_item,ES_item....] || ES[type][selector]=[ES_item,ES_item....]; 
+		//ES_item={cnt:0,fn:,data:}; cnt 当前执行的次数
+		ES={
+			// swipe出发的精度，默认为2
+			swipeStep:2,
+			//是否监控swipe时间的mouseout
+			swipeCheckOut:false,
+			//记录当前点击开始的监控对象列表,touch监控事件初始化时才会初始化为数组
+			touchs:null,
+			//已经live绑定的事件列表（一个事件类型只绑定一个代理函数）
+			lives:{},
+			// dom事件列表，每个事件，每个dom绑定一个事件类型
+			data:{},
+			// dom代理函数事件,每个dom每个事件类型只会绑定一个func函数来代理。由于在事件中回调，所以this代表的是dom
+			// e 为event,et自定义的触发事件，不设置的话则为e自身的type，s自定义的触发对象（dom或者selector），默认为dom对象本身
+			trigger:function(e,et,k){
+				et=et?et:e.type;
+				var s=k?k:id(this),
+					d=s?s:this,
+					D=k?ES.lives:ES.data,
+					el=D[et]?D[et][s]:null;
+				if (el) {
+					for (var i=0,l=el.length;i<l;i++) {
+						var n=el[i];
+						e.firecnt=++n.cnt;
+						e.data=n.data;
+						if(n.fn.call(this,e)===false){
+							ES.remove(et,d,n.fn);
+							i--;l--;
+						}
+					}
 				};
-				tap=swipe=false;
+			},
+			// selector的代理函数事件，根据选择器来匹配元素从而确认函数是否执行。
+			live:function(e){
+				var et=e.type,d=e.target,o=M(d),os=o.add(o.parentsUntil(document.body)),
+					ss=ES.lives[et]||[],dss={};
+				e.stopPropagation=function(){
+					this._sbunble=true;
+				}
+				// 先检索出所有该事件类型的live绑定dom列表
+				for (var s in ss) {
+					dss[s]=M(s);
+				}
+				// 如此繁琐的循环，是为了保障冒泡的顺序
+				os.each(function(d){
+					if (e._sbunble) {return false;}
+					M.each(dss,function(s,n){
+ 						M(d).is(n) && ES.trigger.call(d,e,null,s);
+					});
+				});
+			},
+			// 事件列表中增加某事件类型某dom绑定的事件
+			// d可能是dom也可能是selector
+			add:function(et,d,da,f){
+				var s=d,D=ES.lives;
+				if (d.nodeName) {
+					s=id(d);D=ES.data;
+					// 增加swipe，tap判断
+					if(/swipe|tap/i.test(et)){
+						if(ES.touchs==null){
+							ES.touchs=[];initTouch();
+						}
+						var o=M(d);
+						if(!o.data('tapinit')){
+							o.on('vmousedown',tapdown).data('tapinit',true);
+							ES.swipeCheckOut&&o.on('vmouseout',tapout);
+						}
+ 					}else{
+						d.addEventListener(et,ES.trigger,false);
+					}
+				}else{
+					// 如果该event.type下没有元素，则初始化live监听列表
+					if (!D[et]) {
+						document.addEventListener(et,ES.live,false);
+					}
+				}
+				!D[et]&&(D[et]={});
+				!D[et][s]&&(D[et][s]=[]);
+				D[et][s].push({cnt:0,data:da,fn:f});
+			},
+			// 事件列表中删除某事件类型[某dom]绑定的事件,暂时没有根据事件列表的为空时删除代理事件绑定
+			// d可能是dom也可能是selector
+			// isDie  是否die操作
+			remove:function(et,d,f,isDie){
+				if(!et || !d){return;}
+				var s=isDie?d:id(d),D=isDie?this.lives:this.data;
+				if (f==undefined) {
+					D[et]&&D[et][s]&&(delete D[et][s]);
+				}else{
+					if (D[et] && D[et][s]) {
+						var el=D[et][s];
+						for (var i = 0,l=el.length; i < l; i++) {
+							if(el[i]['fn'] == f){
+								D[et][s].splice(i,1);
+								i--;l--;//这里没有直接return 因为有可能同一个函数绑定两次。。
+							}
+						}
+						(D[et][s].length==0)&&(delete D[et][s]);
+					}
+				}
+				D[et]&&(M.JSON.count(D[et])==0) && (delete D[et]);
+				// 解除事件绑定
+				if (isDie) {
+					if (!D[et]) {
+						document.removeEventListener(et,this.live,false);
+						return;
+					};
+				}else{
+					if(/swipe|tap/i.test(et)){
+						if (!D['tap']&&!D['longTap']&&!D['swipe']) {
+							M(d).off('vmousedown',tapdown).off('vmouseout',tapout).data('tapinit',false);
+						};
+					}else{
+						if (!D[et]|| !D[et][s]) {
+							d.removeEventListener(et,this.trigger,false);
+						}
+					}
+				}
+			}
+		};
+	
+	UT.each(['live','die','bind','unbind','on','off','delegate','undelegate','one','trigger'],function(i,n){
+		M.fn[n]=function(evs,da,f){
+			if (!evs) {return this;}
+			da&&!f&&(f=da)&&(da=undefined);
+			//兼容多事件类型同时操作
+			var es=evs.split(' '),s=this.selector;
+			for (var i = 0,l=es.length; i < l; i++) {
+				var et=es[i];
+				et=SET[et]?SET[et]:et;
+	 			switch(n){
+					case 'live':
+						if (!s) {return this;}
+						ES.add(et,s,da,f);
+					break;
+					case 'die':
+						if (!s) {return this;}
+						ES.remove(et,s,f,true);
+					break;
+					default:
+						for (var i = 0,l=this.length; i < l; i++) {
+							s=this[i];
+							switch(n){
+								case 'bind':
+								case 'on':
+								case 'delegate':
+									if (!f) {return this;}
+									ES.add(et,s,da,f);
+								break;
+								case 'unbind':
+								case 'off':
+								case 'undelegate':
+									ES.remove(et,s,f);
+								break;
+								case 'one':
+									ES.add(et,s,da,function(){
+										f.call(this,arguments[0]);
+										return false;
+									});
+								break;
+								case 'trigger':
+									// 模拟触发绑定事件 ，兼容touch
+									var ev = document.createEvent("Events");//MouseEvents<UIEvents<Events
+									ev.initEvent(et, true, true);
+									s.dispatchEvent(ev);
+								break;
+							}
+						}
+					break;
+				}
 			};
-			document.addEventListener(SET['vmousedown'],function(e){
-				 if (e.touches&&e.touches.length!=1){return;}
-		         var touch = e.touches?e.touches[0]:e;
-		         st=Date.now()||new Date().getTime();
-		         sx = touch.pageX;
-		         sy = touch.pageY;
-		         tap=true;swipe=false;
-		         lt=setInterval(function(){
-					et=Date.now()||new Date().getTime();
-					if ((et-st)>lto) {
-						clearInterval(lt);
-						trig("longTap",e);
-					}
-		         },200);
-			},false);
-			document.addEventListener(SET['vmousemove'],function(e){
-				if (tap) {
-					var touch =e.touches?e.touches[0]:e;
-					x=touch.pageX;y=touch.pageY;
-					var dx=Math.abs(x-sx),dy=Math.abs(y-sy);
-					target=(dx>2||dy>2)?(dx>dy?(x>sx?'Right':'Left'):(y>sy?'Down':'Up')):false;
-					if (target) {
-						swipe=true;
-						clearInterval(lt);
-						e.movement={startx:sx,starty:sy,x:x,y:y,target:target};
-						trig("swipe",e)
-						trig("swipe"+target,e)
-					};
-				}
-			},false);
-			document.addEventListener(SET['vmouseup'],endtouch,false);
-			// document.addEventListener(SET['vmouseout'],endtouch,false);
-		},
-		EVENTS={
-			on:function(){
-				if (arguments.length>1){
-					var ets=arguments[0],d=arguments[1],fn=arguments[2],es;					
-					if (M.isFunction(d)) {
-						fn=d;d=null;
-					}else{
-						if (!fn||!M.isFunction(fn)) {
-							return this;
-						}
-					}
-					es=uniq(ets.split(" "));
-					for (var i = 0; i < es.length; i++) {
-						var et=es[i];
-						et=SET[et]?SET[et]:et;
-						if (typeof ES[et] === "undefined") {	
-							ES[et]={};
-							//事件委托,注意内部不能使用et，不懂去看闭包和变量作用域
-							document.addEventListener(et,function(e){
-								trig(e.type,e);
- 							},false);
-							//滑动事件绑定判断
-							if((_swipe==false)&&(/swipe|tap/i.test(et))){
-								_swipe=true;
-								swipe();
-							}
-						}
-						//将本次选择器放入本对象的data中，便于以后循环获取根据不同selector绑定的事件
-						this.each(function(dom){
-							var hash=id(dom);
-							if (typeof ES[et][hash] === "undefined") {
-								ES[et][hash]=[];
-							}
-							ES[et][hash].push({'fn':fn,'data':d,'cnt':0});
-						});
-					};
-				}
-				return this;
-			},
-			trigger:function(et){
-				if (et && ES[et]) {
-					var _dels=[],e=arguments[arguments.length-1];
-					//在本对象的事件选择器列表中获取所有绑定事件时使用过的选择器来检索事件
-					this.each(function(d){
-						//始终传入的最后一个参数为event(手动除外)
-						e=e.type?e:{'target':d,'type':et};
-						//是否已经终止传播
-						if (e._bubble==false) {return false;};
-						var hash=id(d),items=ES[et][hash]||[];
-						for (var j=0,len = items.length; j <len; j++) {
-							e.data=items[j]['data'];
-							e.firecnt=++items[j]['cnt'];
-							//根据返回值来判断是否取消绑定
-							if(items[j]['fn'].call(d,e)===false){
-								items.splice(j,1);
-							}
-						}
-					});
- 				}
-				return this;
-			},
-			off:function(et,fn){
-				this.each(function(d){
-					var hash=id(d),items;
-					if (et && ES[et]) {
-						if (items=ES[et][hash]) {
-							if(fn){
-								var _dels=[];
-								for (var i =items.length - 1; i >= 0; i--) {
-									if (items[i]['fn']==fn) {
-										_dels.push(i);
-									}
-								}
-								//数组分离删除，防止序号错乱
-								for (var i = _dels.length - 1; i >= 0; i--) {
-									ES[et][hash].splice(i,1);
-								}
-							}else{
-								delete ES[et][hash];
-							}
-						}
-					}else{
-						//删除所有
-						M.each(ES,function(i,d){
-							delete d[hash];
-						});
-					}
-				});
-				return this;
-			},
-			one:function(et,d,fn){
-				var _fn=fn;
-				this.on(et,d,function(e){
-					if (_fn) {
-						fn.call(this,e);
-					};
+			return this;
+		}
+	});
+	
+	M.Event=ES;
+	/**动画*/
+	var atimer=null,_AS={},_apre=bs.prefix?bs.prefix+'Transition':'transition',ntdelay=_apre+'Delay',ntp=_apre+'Property',ntd=_apre+'Duration',nttf=_apre+'TimingFunction',
+	speed={'slow':1000,'normal':600,'fast':300},
+	gfx=function(d){
+		var i=id(d),q=_AS[i];
+		if (q==undefined) {
+			var ds=d.style,ot={};
+			ot[ntp]=ds[ntp];ot[ntd]=ds[ntd];ot[nttf]=ds[nttf];ot[ntdelay]=ds[ntdelay];
+			return {dom:d,oldt:ot,t:0,stacks:[]};
+		}
+		return  _AS[i];
+	},
+	ANIMS={
+		isAnimate:function(){
+			var r=false;
+			this.each(function(d){
+				if (_AS[id(d)]) {
+					r=true;
 					return false;
-				});
-				return this;
-			}
-		};
-		EVENTS.bind=EVENTS.on;EVENTS.unbind=EVENTS.off;
-		/**动画*/
-		var atimer=null,_AS={},_apre=bs.prefix?bs.prefix+'Transition':'transition',ntdelay=_apre+'Delay',ntp=_apre+'Property',ntd=_apre+'Duration',nttf=_apre+'TimingFunction',
-		speed={'slow':1000,'normal':600,'fast':300},
-		gfx=function(d){
-			var i=id(d),q=_AS[i];
-			if (q==undefined) {
-				var ds=d.style,ot={};
-				ot[ntp]=ds[ntp];ot[ntd]=ds[ntd];ot[nttf]=ds[nttf];ot[ntdelay]=ds[ntdelay];
-				return {dom:d,oldt:ot,t:0,stacks:[]};
-			}
-			return  _AS[i];
-		},
-		ANIMS={
-			isAnimate:function(){
-				var r=false;
-				this.each(function(d){
-					if (_AS[id(d)]) {
-						r=true;
-						return false;
-					}
-				});
-				return r;
-			},
-			delay:function(t){
-				if (M.isNumeric(t)) {
-					this.each(function(d){
-						var q=gfx(d);
-							q.stacks.push({'dur':t});
-						_AS[id(d)]=q;
-					});
 				}
-				this._run();
-				return this;
-			},
-			/**stop([clearQueue])
-			停止所有在指定元素上正在运行的动画。
-			如果队列中有等待执行的动画(并且clearQueue没有设为true)，他们将被马上执行
-			*/
-			stop:function(cq){
-				cq=cq===false?false:true;
+			});
+			return r;
+		},
+		delay:function(t){
+			if (M.isNumeric(t)) {
 				this.each(function(d){
-					var idx=id(d);
-					if (!_AS[idx]) {return false;};
-					if (cq) {
-						//中断
-						var s=d.style;
-						for (var i = s.length - 1; i >= 0; i--) {
-							d.style[s[i]]=gc(d,s[i]);
-						}
-					}else{
-						var as=_AS[idx],l=as?as.stacks.length:0,p={};
-						for (var i = 0; i <l; i++) {
-							if (as.stacks[i].tran) {
-								M.extend(p,as.stacks[i].tran)
-							}
-						}
-						M(d).css(p);
+					var q=gfx(d);
+						q.stacks.push({'dur':t});
+					_AS[id(d)]=q;
+				});
+			}
+			this._run();
+			return this;
+		},
+		/**stop([clearQueue])
+		停止所有在指定元素上正在运行的动画。
+		如果队列中有等待执行的动画(并且clearQueue没有设为true)，他们将被马上执行
+		*/
+		stop:function(cq){
+			cq=cq===false?false:true;
+			this.each(function(d){
+				var idx=id(d);
+				if (!_AS[idx]) {return false;};
+				if (cq) {
+					//中断
+					var s=d.style;
+					for (var i = s.length - 1; i >= 0; i--) {
+						d.style[s[i]]=gc(d,s[i]);
 					}
-					M(d).css(_apre,'');
-					_AS[idx].stacks=[];
-				});
-				return this;
-			},
-			/**animate(params,[speed],[easing],[fn])*/
-			animate:function(p,s,e,f){
-				if (!M.isPlainObject(p)||M.isEmptyObject(p)) {return this;};
-				var	a=type(s),b=type(e),
-					_s=(s==undefined||(a!='String' && a!='Number'))?'normal':s,
-					_e=(e==undefined||b!='String')?'ease':e,
-					_f=a=='Function'?s:b=='Function'?e:f;
-					if (a=='Object') {
-						_s=s.speed?s.speed:_s;
-						_e=s.easing?s.easing:_e;
-						_f=s.callback?s.callback:_f;
-					};
-					_s=M.isString(_s)?(speed[_s]||speed['normal']):_s;
-					_e=_e=='swing'?'ease-in-out':_e;
-				//更新动画队列
- 				this.each(function(d){
-					var queue=gfx(d),tran={};
-					tran[ntp]='all';tran[ntd]=_s/1000+'s';tran[nttf]=_e;
-					M.extend(tran,p);
-					queue.stacks.push({dur:_s,tran:tran,fn:_f});
-					_AS[id(d)]=queue;
-				});
-				this._run();
-				return this;
-			},
-			/***/
-			_run:function(){
-				//启动全局动画队列
-				if (atimer==null) {
-					atimer=new UT.raf(20,function(n){
-						var n=0;
-						M.each(_AS,function(i,q){
-							if (q.stacks.length==0) {
-								//本对象的动画序列为空，还原并删除队列中的该对象
-								M(q.dom).css(q.oldt);
-								delete _AS[i]
+				}else{
+					var as=_AS[idx],l=as?as.stacks.length:0,p={};
+					for (var i = 0; i <l; i++) {
+						if (as.stacks[i].tran) {
+							M.extend(p,as.stacks[i].tran)
+						}
+					}
+					M(d).css(p);
+				}
+				M(d).css(_apre,'');
+				_AS[idx].stacks=[];
+			});
+			return this;
+		},
+		/**animate(params,[speed],[easing],[fn])*/
+		animate:function(p,s,e,f){
+			if (!M.isPlainObject(p)||M.isEmptyObject(p)) {return this;};
+			var	a=type(s),b=type(e),
+				_s=(s==undefined||(a!='String' && a!='Number'))?'normal':s,
+				_e=(e==undefined||b!='String')?'ease':e,
+				_f=a=='Function'?s:b=='Function'?e:f;
+				if (a=='Object') {
+					_s=s.speed?s.speed:_s;
+					_e=s.easing?s.easing:_e;
+					_f=s.callback?s.callback:_f;
+				};
+				_s=M.isString(_s)?(speed[_s]||speed['normal']):_s;
+				_e=_e=='swing'?'ease-in-out':_e;
+			//更新动画队列
+				this.each(function(d){
+				var queue=gfx(d),tran={};
+				tran[ntp]='all';tran[ntd]=_s/1000+'s';tran[nttf]=_e;
+				M.extend(tran,p);
+				queue.stacks.push({dur:_s,tran:tran,fn:_f});
+				_AS[id(d)]=queue;
+			});
+			this._run();
+			return this;
+		},
+		/***/
+		_run:function(){
+			//启动全局动画队列
+			if (atimer==null) {
+				atimer=new UT.raf(20,function(n){
+					var n=0;
+					M.each(_AS,function(i,q){
+						if (q.stacks.length==0) {
+							//本对象的动画序列为空，还原并删除队列中的该对象
+							M(q.dom).css(q.oldt);
+							delete _AS[i]
+						}else{
+							var stack=q.stacks[0];
+							//本dom的计数器开始
+							if (q.t==0) {
+								q.t=Date.now();
+								if (stack.tran!=undefined) {
+									M(q.dom).css(stack.tran);
+								}
 							}else{
-								var stack=q.stacks[0];
-								//本dom的计数器开始
-								if (q.t==0) {
-									q.t=Date.now();
-									if (stack.tran!=undefined) {
-										M(q.dom).css(stack.tran);
-									}
-								}else{
-									//判断结束
-									if (Date.now()-q.t>=stack.dur){
-										if(stack.fn){stack.fn.call(q.dom);}
-										q.t=0;
-										_AS[i].stacks.shift();
-									}
+								//判断结束
+								if (Date.now()-q.t>=stack.dur){
+									if(stack.fn){stack.fn.call(q.dom);}
+									q.t=0;
+									_AS[i].stacks.shift();
 								}
 							}
-							n++;
-						});
-						if (n==0) {this.stop();atimer=null};
+						}
+						n++;
 					});
-					atimer&&atimer.start();
-				};
-			}
-		},
-		/**动画扩展包*/
-		animExt=function(oo,t,s,e,f){
-			if (oo.isAnimate()) {return false};
-			oo.each(function(d){
-				var o=$(d),ds=o.data('sjs_aext'),
-					dis=o.css('display'),
-					oc={'overflow':'hidden'},	/*动画初始css属性*/
-					ac={},  					/*动画css属性*/
-					ed='none';					/*动画结束后的显示状态*/
-				if (!ds) {
-					o.save();
-					o.css({'display':'block'});
-					ds=o.getBox();
-					ds.dis=(dis=='none')?'block':dis;
-					o.restore();
-					o.data('sjs_aext',ds);
-				}
-				t=(t=='slideToggle')?((dis=='none')?'slideDown':'slideUp'):((t=='fadeToggle')?((dis=='none')?'fadeIn':'fadeOut'):((t=='spreadToggle')?((dis=='none')?'spreadRight':'spreadLeft'):t));
-				switch(t){
-					case 'slideUp':
-						oc.height=ds.height;
-						ac.height=0;
-					break;
-					case 'slideDown':
-						if(dis!='none'){return oo;}
-						oc.height=0;
-						oc.display=ed=ds.dis;
-						ac.height=ds.height;
-					break;
-					case 'spreadLeft':
-						oc.width=ds.width;
-						ac.width=0;
-					break;
-					case 'spreadRight':
-						if(dis!='none'){return oo;}
-						oc.width=0;
-						oc.display=ed=ds.dis;
-						ac.width=ds.width;
-					break;
-					case 'fadeIn':
-						if(dis!='none'){return oo;}
-						oc.opacity=0;
-						oc.display=ed=ds.dis;
-						ac.opacity=1;
-					break;
-					case 'fadeOut':
-						oc.opacity=1;
-						ac.opacity=0;
-					break;
-				}
-				o.save();
-				o.css(oc).animate(ac,s,e,function(){
-					o.restore();
-					o.css('display',ed);
-					if (f) {f.call(d)};
+					if (n==0) {this.stop();atimer=null};
 				});
-			});
-			return oo;	
-		};
-		UT.each(['slideDown','slideUp','slideToggle','spreadRight','spreadLeft','spreadToggle','fadeIn','fadeOut','fadeToggle'],function(i,d){
-			M.fn[d]=function(s,e,f){
-				return animExt(this,d,s,e,f);
+				atimer&&atimer.start();
+			};
+		}
+	},
+	/**动画扩展包*/
+	animExt=function(oo,t,s,e,f){
+		if (oo.isAnimate()) {return false};
+		oo.each(function(d){
+			var o=$(d),ds=o.data('sjs_aext'),
+				dis=o.css('display'),
+				oc={'overflow':'hidden'},	/*动画初始css属性*/
+				ac={},  					/*动画css属性*/
+				ed='none';					/*动画结束后的显示状态*/
+			if (!ds) {
+				o.save();
+				o.css({'display':'block'});
+				ds=o.getBox();
+				ds.dis=(dis=='none')?'block':dis;
+				o.restore();
+				o.data('sjs_aext',ds);
 			}
+			t=(t=='slideToggle')?((dis=='none')?'slideDown':'slideUp'):((t=='fadeToggle')?((dis=='none')?'fadeIn':'fadeOut'):((t=='spreadToggle')?((dis=='none')?'spreadRight':'spreadLeft'):t));
+			switch(t){
+				case 'slideUp':
+					oc.height=ds.height;
+					ac.height=0;
+				break;
+				case 'slideDown':
+					if(dis!='none'){return oo;}
+					oc.height=0;
+					oc.display=ed=ds.dis;
+					ac.height=ds.height;
+				break;
+				case 'spreadLeft':
+					oc.width=ds.width;
+					ac.width=0;
+				break;
+				case 'spreadRight':
+					if(dis!='none'){return oo;}
+					oc.width=0;
+					oc.display=ed=ds.dis;
+					ac.width=ds.width;
+				break;
+				case 'fadeIn':
+					if(dis!='none'){return oo;}
+					oc.opacity=0;
+					oc.display=ed=ds.dis;
+					ac.opacity=1;
+				break;
+				case 'fadeOut':
+					oc.opacity=1;
+					ac.opacity=0;
+				break;
+			}
+			o.save();
+			o.css(oc).animate(ac,s,e,function(){
+				o.restore();
+				o.css('display',ed);
+				if (f) {f.call(d)};
+			});
 		});
-		/**
-		 * 扩展所有工具包
-		 */
-		var SED=M.extend({},UT,{browser:bs},AJAXS),ED=M.extend(DOMS,EVENTS,ANIMS);
-		M.extend(SED);
-		M.fn.extend(ED);
-		//全局提供
-		W.sjs = W.$ = M;
+		return oo;	
+	};
+	UT.each(['slideDown','slideUp','slideToggle','spreadRight','spreadLeft','spreadToggle','fadeIn','fadeOut','fadeToggle'],function(i,d){
+		M.fn[d]=function(s,e,f){
+			return animExt(this,d,s,e,f);
+		}
+	});
+	/**
+	 * 扩展所有工具包
+	 */
+	var SED=M.extend({},UT,{browser:bs},AJAXS),ED=M.extend(DOMS,ANIMS);
+	M.extend(SED);
+	M.fn.extend(ED);
+	//全局提供
+	W.sjs = W.$ = M;
 })(window);

@@ -221,7 +221,8 @@
 	<div>
 		移动端的touch事件与pc端的mouse事件整合为了,vmousedown,vmouseup,vmousecancel,vmousemove,vmouseout事件类型。
 		新增了tap，longTap点击事件类型。
-		新增了swipe，swipeLeft，swipeRight，swipeUp，swipeDown，swipeEnd鼠标（手指）滑动事件类型，并在event中提供了movement({startx:1,starty:1,x:100,y:100,target:'Top'}：前一组x|y代表起始的pageX|pageY，后一组代表当前的)属性来记录移动情况,target代表当前移动的方向.值得注意的是除了swipeEnd是结束事件，其他几个都是实时动作事件，区别于zepto
+		新增了swipe实时移动动作监听事件类型(目前不支持live绑定，后续版本会支持)，(<Del>swipeLeft，swipeRight，swipeUp，swipeDown</del>,v1.1版本之后将不再支持,具体方向从event.movement.target获取)；swipeEnd鼠标（手指）滑动结束事件类型。并在event中提供了movement({startx:1,starty:1,x:100,y:100,target:'top'}：前一组x|y代表起始的pageX|pageY，后一组代表当前的)属性来记录移动情况,target代表当前移动的方向.<br>
+		另外增加 $.Event.swipeCheckOut属性来确认是否监控mouseout鼠标离开dom，默认为false，pc可以设置为true来开启该监控。$.Event.swipeStep可以用来设置swipe的精度，默认为2<br>
 	</div>
 	<ul class="detail" >
 		<li class="title">on(type,[data],fn)<span class="red">*</span></li>
@@ -234,8 +235,16 @@
 		<li class="tip">为每一个匹配元素的特定事件绑定一个一次性的事件处理函数</li>
 		<li class="title"><del>bind(type,[data],fn)</del></li>
 		<li class="tip">on的别名。只是为了兼容预留</li>
-		<li class="title"><del>unbind(type,[data|fn]])</del></li>
+		<li class="title"><del>unbind(type,[fn])</del></li>
 		<li class="tip">off的别名，只是为了兼容预留</li>
+		<li class="title"><del>delegate(type,[data],fn)</del></li>
+		<li class="tip">on的别名。只是为了兼容预留</li>
+		<li class="title"><del>undelegate(type,[fn])</del></li>
+		<li class="tip">off的别名，只是为了兼容预留</li>
+		<li class="title">live(type,[data],fn)</li>
+		<li class="tip">on的别名。只是为了兼容预留</li>
+		<li class="title">die(type,[fn])</li>
+		<li class="tip">解除由live绑定的函数</li>
 	</ul>
 	<h4 >10。动画</h4>
 	<ul class="detail" >	

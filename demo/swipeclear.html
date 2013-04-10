@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<script type="text/javascript" src="../sjs.min.js"></script>
+	<title>clear</title>
+	<style>
+	*{
+		-webkit-touch-callout: none;
+		-webkit-user-select: none;
+		-khtml-user-select: none;
+		-moz-user-select: none;
+		-ms-user-select: none;
+		user-select: none;
+	}
+	ul{
+		margin: 1px;
+		padding: 0;
+		list-style-type: none;
+		overflow: hidden;
+		width: 100%;
+	}
+	li{
+		height: 50px;
+		line-height: 50px;
+		background-color: #3E599B;
+		color: #fff;
+		border-bottom: 1px solid rgba(10,10,10,0.4);
+	}
+	</style>
+</head>
+<body>
+	<ul>
+		<li>任务1</li>
+		<li>任务2</li>
+		<li>任务3</li>
+		<li>任务4</li>
+		<li>任务5</li>
+	</ul>
+</body>
+<script>
+//是否检查，鼠标移出目标dom，默认为false。由于该对象监控的是mouseout，pc可以设置为true
+// $.Event.swipeCheckOut=true;
+$.Event.swipeStep=5;
+var swipe=function(e){
+	e.preventDefault();
+	var o=$(this),op=o.parent(),move=e.movement,dx=move.x-move.startx,dy=move.y-move.starty;
+	switch(move.target){
+		case 'right':
+			o.css({'-webkit-transform':'translate('+dx+'px)'});
+		break;
+		case 'up':
+		case 'down':
+			if ((Math.abs(dy)>50)&&!op.data('add')) {
+				op.data('add',true);
+				var f=move.target=='up'?'appendTo':'prependTo';
+				$('<li>new</li>')[f](op).on('swipe',swipe).on('swipeEnd',endSwipe).on('longTap',longTap);
+			}else{
+				op.css({'-webkit-transform':'translate(0,'+dy+'px)'});
+			}
+		break;
+	}
+},endSwipe=function(e){
+	var o=$(this),move=e.movement,dx=move.x-move.startx,dy=move.y-move.starty;
+	switch(move.target){
+		case 'right':
+			if(dx>50){
+				o.fadeOut('fast',function(){
+					$(this).remove();
+				});
+			}else{
+				o.animate({'-webkit-transform':'translate(0)'},'fast');
+			}
+		break;
+	}
+	o.parent().data('add',false).animate({'-webkit-transform':'translate(0)'},'fast');
+},longTap=function(e){
+	e.preventDefault();
+	$(this).html('done');
+};
+
+$('li').on('swipe',swipe).on('swipeEnd',endSwipe).on('longTap',longTap);
+
+</script>
+</html>

@@ -32,28 +32,28 @@
 	<div id='info'></div>
 </body>
 <script type="text/javascript">
-	$('ul>li>div').on('tap',function(e){
-		console.log('triger tap ',this);
+	
+	$('ul').on('longTap',function(e){
+		console.log('triger longTap ',this);
 		// e.stopPropagation();
 	});
-	$('ul>li').on('longTap',function(e){
-		console.log('triger longTap ',this);
-		e.stopPropagation();
-	});
+	
 	$('ul').on('tap',function(e){
 		console.log('triger tap ',this);
 		// e.stopPropagation();
 	});
-	// document.getElementById("div1").addEventListener('click',function(e){
-	// 	console.log('div1 click');
-	// 								e.stopPropagation();
-
-	// });
-	// document.getElementById("li1").addEventListener('click',function(e){
-	// 	console.log('li1 click');
-	// });
-	// document.getElementById("ul1").addEventListener('click',function(e){
-	// 	console.log('ul1 click');
-	// });
+	$('ul>li').on('tap',function(e){
+		console.log('triger tap ',this);
+		e.stopPropagation();
+	});
+	$('ul>li>div').on('tap',function(e){
+		console.log('triger tap ',this);
+	});
+	// 
+	// 
+	// ///////////////////////////////////////////
+	// $('ul>li').off('tap');
+	// $('ul').off('tap');
+	// $('ul').off('longTap');
 </script>
 </html>
