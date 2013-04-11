@@ -17,7 +17,10 @@
 <p>  如果没有特殊说明，表明该接口与jquery用法相同，具体示例与说明请查阅资源总的api.html或者jquery文档。  
 
 
-</p>	
+</p>
+<p>
+在线的引用地址为：http://cczw2010.github.com/sjs/sjs.min.js
+</p>
 </div>
 
 </body>
