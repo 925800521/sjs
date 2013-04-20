@@ -12,6 +12,7 @@
 		AP=Array.prototype,
 		RAF = W.requestAnimationFrame|| W.mozRequestAnimationFrame|| W.webkitRequestAnimationFrame|| W.msRequestAnimationFrame|| W.oRequestAnimationFrame|| function(f) {setTimeout(f, 1000/60);},
  		sh=/^[^<]*(<[\w\W]+>)[^>]*$|^#([\w-]+)$/,
+ 		DS={},
  		type=function(o){
 			return o!=undefined?(Object.prototype.toString.call(o)).slice(8,-1):'undefined';
 		},
@@ -140,6 +141,12 @@
 					}
 				}
 				return o;
+			},
+			data:function(k,v){
+				return M('html').data(k,v);
+			},
+			removeData:function(k){
+				return M('html').removeData(k);
 			},
 			/**json*/
 			JSON:{
@@ -448,14 +455,14 @@
 	}
 	//删除数据
 	function dd(d,k){
-		var hash=id(d),ds=_domdatas[hash]||undefined;
+		var hash=id(d),ds=DS[hash]||undefined;
 		if (ds){
 			if(k){
-				if (_domdatas[hash][k]) {
-					delete _domdatas[hash][k];
+				if (DS[hash][k]) {
+					delete DS[hash][k];
 				}
 			}else{
-				delete _domdatas[hash];
+				delete DS[hash];
 			}
 		}
 	}
@@ -503,7 +510,7 @@
 	}
 	//获取元素数据
 	function gd(d,k){
-	 	var hash=id(d),ds=_domdatas[hash]||undefined;
+	 	var hash=id(d),ds=DS[hash]||undefined;
 	 	return k==undefined?ds:(ds&&(ds[k]!=undefined))?ds[k]:undefined;
 	}
 	//获取dom的outhtml代码
@@ -572,8 +579,8 @@
 	//设置元素数据
 	function sd(d,k,v){
 		var hash=id(d);
-		if (!_domdatas[hash]) {_domdatas[hash]={};}
-		_domdatas[hash][k]=v;
+		if (!DS[hash]) {DS[hash]={};}
+		DS[hash][k]=v;
 	}
 	//常规数组去重
 	function uniq(o){
@@ -599,38 +606,28 @@
 		return ret;
 	}		
 	//dom扩展
-	var _domdatas={},
-		DOMS={
+	var DOMS={
 	 		data:function(k,v){
 	 			if (this.length>0) {
-					var len=arguments.length;
-		 			switch(len){
-		 				case 0:
-		 				case 1:
-		 					return gd(this[0],k);
-		 				break;
-		 				default:
-		 					this.each(function(d){
+	 				return v?this.each(function(d){
 		 						sd(d,k,v)
-		 					});
-		 				break;
-		 			}
+		 					}):gd(this[0],k);
 	 			}
 	 			return this;
 	 		},
-	 		/**删除数据,name可以使某个key，也可以使key数组，或者空格分开的key串*/
-	 		removeData:function(name){
-	 			if (M.isString(name) && !M.isEmptyString(name)) {
-	 				name=name.split(" ");
+	 		/**删除数据,k可以使某个key，也可以使key数组，或者空格分开的key串*/
+	 		removeData:function(k){
+	 			if (M.isString(k) && !M.isEmptyString(k)) {
+	 				k=k.split(" ");
 	 			}
 	 			return this.each(function(d){
-						if (M.isArray(name)) {
-							M.each(name,function(i,n){
+						if (M.isArray(k)) {
+							M.each(k,function(i,n){
 								dd(d,n)
 		 				});
 		 			}else{
 		 				dd(d);
-						}
+					}
 	 			});
 	 		},
 	 		html:function(s){
