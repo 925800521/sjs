@@ -142,11 +142,8 @@
 				}
 				return o;
 			},
-			data:function(k,v){
-				return M('html').data(k,v);
-			},
-			removeData:function(k){
-				return M('html').removeData(k);
+			data:function(d,k,v){
+				return M(d).data(k,v);
 			},
 			/**json*/
 			JSON:{
