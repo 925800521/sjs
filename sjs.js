@@ -268,10 +268,11 @@
 		length: 0,
 		init:function(s,cxt){
 			if (W==this) {return new M(s,cxt)};
-			//是sjs对象则返回原sjs对象
-			if (isS(s)) {return s;};
+
 			this.context=cxt?cxt:D;
 			if (s) {
+				//是sjs对象则返回原sjs对象
+				if (isS(s)) {return s;};
 				/**如果是函数则为ready*/
 				if (UT.isFunction(s)) {
 					D.addEventListener("DOMContentLoaded", function(e) {
@@ -279,7 +280,7 @@
 					},false);
 				}
 				// M(DOMElement)
-				if (s.nodeType) {
+				if (s.nodeType || s == W) {
 					this[0] = s;
 					this.length = 1;
 					//dom对象的唯一标志
@@ -527,7 +528,7 @@
 	}
 	// 判断是否sjs对象
 	function isS(o){
-		return o&&o.sjs!=undefined;
+		return o && o!=W && o.sjs!=undefined;
 	}
 	//sjs对象整合到documentFragment对象中病返回
 	function stodf(o){
@@ -1343,7 +1344,7 @@
 			// d可能是dom也可能是selector
 			add:function(et,d,da,f){
 				var s=d,D=ES.lives;
-				if (d.nodeName) {
+				if (typeof d != 'string') {
 					s=id(d);D=ES.data;
 					// 增加swipe，tap判断
 					if(/swipe|tap/i.test(et)){
