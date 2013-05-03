@@ -5,14 +5,15 @@
 ;(function(W,undefined){
 	var D=W.document,
 		_$$=W.$?W.$:undefined,
-		wn=W.navigator,
-		wl=W.location,
-		ua=wn.userAgent.toLowerCase(),
-		av=wn.appVersion,
-		AP=Array.prototype,
-		RAF = W.requestAnimationFrame|| W.mozRequestAnimationFrame|| W.webkitRequestAnimationFrame|| W.msRequestAnimationFrame|| W.oRequestAnimationFrame|| function(f) {setTimeout(f, 1000/60);},
- 		sh=/^[^<]*(<[\w\W]+>)[^>]*$|^#([\w-]+)$/,
- 		DS={},
+		wn = W.navigator,
+		wl = W.location,
+		ua = wn.userAgent.toLowerCase(),
+		av = wn.appVersion,
+		AP = Array.prototype,
+		RAF = W.requestAnimationFrame|| W.mozRequestAnimationFrame|| W.webkitRequestAnimationFrame|| W.msRequestAnimationFrame|| W.oRequestAnimationFrame|| function(f) {AF = setTimeout(f, 1000/60);},
+		CAF = W.cancelAnimationFrame || function(t){clearTimeout(t);},
+ 		sh = /^[^<]*(<[\w\W]+>)[^>]*$|^#([\w-]+)$/,
+ 		DS = {},
  		type=function(o){
 			return o!=undefined?(Object.prototype.toString.call(o)).slice(8,-1):'undefined';
 		},
@@ -218,8 +219,8 @@
 			raf:function(frame,fn) {
 				//run 动画状态  0初始 1运动 2暂停 3停止
 				var st=new Date().getTime(),_f=Math.ceil(1000/frame),run=0,
-					cnt=0,args=AP.slice.call(arguments,2);args.unshift(cnt);
-				instance=this;
+					cnt=0,args=AP.slice.call(arguments,2),instance=this,rid=0;
+					args.unshift(cnt);
 	 			function go(){
 	 				if (run<2) {
 	 					var _t=new Date().getTime();
@@ -232,14 +233,13 @@
 								return;
 							};
 						};
-						RAF(go);
+						rid = RAF(go);
 	 				};
 				}
-				this.sign=null;
-				this.start=function(){
+ 				this.start=function(){
 					if (run==0) {
 						run=1;
-						RAF(go);
+						rid = RAF(go);
 					};
 				}
 				this.pause=function(){
@@ -250,11 +250,12 @@
 				this.resume=function(){
 					if (run==2) {
 						run=1;
-						RAF(go);
+						rid = RAF(go);
 					};
 				}
 	 			this.stop=function(){
 	 				run=3;
+	 				CAF(rid);
 				}
 			}
 		},
@@ -1213,7 +1214,7 @@
 		'vmouseout':(bs.hasTouch?'touchleave' : 'mouseout'),
 		},
 		// swipe tap 扩展    不支持live
-		tap,sx,sy,px,py,target,				//手势相关
+		tap,sx,sy,px,py,target,						//手势相关
 		lto=800,lt=null,st,							//长点击监控相关
 		// 全局down监控
 		gtapdown=function(e){
@@ -1248,7 +1249,7 @@
 				px=x;py=y;
 				// trigger当前处于监控列表的元素,1.1版本开始过程函数只会处理swipe绑定，没有了swipeleft,Right，Top,Down
 				ES.touchs.forEach(function(d,i){
-					e.movement={startx:sx,starty:sy,x:x,y:y,target:target};
+					e.movement={startx:sx,starty:sy,x:x,y:y,mx:dx,my:dy,target:target};
 					M.Event.trigger.call(d,e,'swipe');
 				});
 			}
@@ -1284,6 +1285,7 @@
  		// dom的out操作
  		tapout=function(e){
  			if(tap && M(e.relatedTarget).parents(this).length==0){
+				e.movement={startx:sx,starty:sy,x:px,y:py,target:target};
  				M.Event.trigger.call(this,e,'swipeEnd');
 				UT.remove(ES.touchs,this);
 			}
@@ -1354,7 +1356,7 @@
 						var o=M(d);
 						if(!o.data('tapinit')){
 							o.on('vmousedown',tapdown).data('tapinit',true);
-							ES.swipeCheckOut&&o.on('vmouseout',tapout);
+							ES.swipeCheckOut && o.on('vmouseout',tapout);
 						}
  					}else{
 						d.addEventListener(et,ES.trigger,false);
@@ -1553,9 +1555,8 @@
 			this._run();
 			return this;
 		},
-		/***/
+		/**启动全局动画队列*/
 		_run:function(){
-			//启动全局动画队列
 			if (atimer==null) {
 				atimer=new UT.raf(20,function(n){
 					var n=0;
