@@ -1112,7 +1112,7 @@
 				return xhr;
 			},
 			ajaxForm:function(sel,s){
-					$(sel).each(function(d){
+					M(sel).each(function(d){
 						if (d.nodeName.toLowerCase()=='form') {
 						var fd = new FormData(d),xhr=new XMLHttpRequest();
 						if (s && s.data) {
@@ -1594,7 +1594,7 @@
 	animExt=function(oo,t,s,e,f){
 		if (oo.isAnimate()) {return false};
 		oo.each(function(d){
-			var o=$(d),ds=o.data('sjs_aext'),
+			var o=M(d),ds=o.data('sjs_aext'),
 				dis=o.css('display'),
 				oc={'overflow':'hidden'},	/*动画初始css属性*/
 				ac={},  					/*动画css属性*/
