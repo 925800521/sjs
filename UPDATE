@@ -1,35 +1,11 @@
-============================================
-2013-2-18
----------
-1 修改了sjs.stop()中的一个小bug(dom对象本身动画状态的保留)
-2 修改了merge中的一个bug
-3 增加了（is,has,filter,not,hasClass,slice）过滤接口
-4 增加了（parentsUntil,parent）查询接口
+2013-5-24
+---------------
+1 增加jsonp  （参数中必须有callback=?）
+2 修改children方法bug
 
-============================================
-2013-2-19
----------
-1 增加了（parents children find,closest）查询接口
-2 增加了(add)	串连接口
-3 优化了sjs(html)
-
-============================================
-2013-2-20
----------
-1 优化了parents效率
-2 增加了（prev,prevAll,prevUntil,next,nextAll,nextUntil,silbings）查询接口
-3 增加了（clone,empty,append,appendTo,prepend,prependTo）文档操作接口
-
-============================================
-2013-2-21
----------
-1 增加了 （after,before,insertBefore,insertAfter）文档操作接口
-
-2013-2-28
----------增加了（swipe，swipeLeft,swipeRight,swipeUp,swipeDown）手指滑动事件类型
 
 2013-4-8
-sjs v1.1 发布
+---------sjs v1.1 发布
 
 1 重新设计并实现了事件管理模块
 2 添加了live，die的支持。（tap，longTap和swipe不支持live）
@@ -40,4 +16,35 @@ sjs v1.1 发布
 bug修复：
 swipe时，子元素的mouseover导致的swipe过程结束
 tap，longTap的冒泡实现。
+
+2013-2-28
+---------增加了（swipe，swipeLeft,swipeRight,swipeUp,swipeDown）手指滑动事件类型
+
+============================================
+2013-2-21
+---------
+1 增加了 （after,before,insertBefore,insertAfter）文档操作接口
+
+
+============================================
+2013-2-20
+---------
+1 优化了parents效率
+2 增加了（prev,prevAll,prevUntil,next,nextAll,nextUntil,silbings）查询接口
+3 增加了（clone,empty,append,appendTo,prepend,prependTo）文档操作接口
+============================================
+2013-2-19
+---------
+1 增加了（parents children find,closest）查询接口
+2 增加了(add)	串连接口
+3 优化了sjs(html)
+
+============================================
+2013-2-18
+---------
+1 修改了sjs.stop()中的一个小bug(dom对象本身动画状态的保留)
+2 修改了merge中的一个bug
+3 增加了（is,has,filter,not,hasClass,slice）过滤接口
+4 增加了（parentsUntil,parent）查询接口
+
 

@@ -337,7 +337,7 @@
 		<li class="tip">返回json中元素的个数</li>
 	</ul>
 	<h4 >4。AJAX对象 <Span class="red">*</span></h4>
-	<div class="tip">常规ajax操作，注意没有jsonp，h5里要jsonp干嘛</div>
+	<div class="tip">常规ajax操作，v1.1版本增加了jsonp方便用户无环境开发，与jquery一样请求url中需要"callback=？"</div>
 	<ul class="detail" >
 		<li class="title">$.ajax(url,[settings]) <Span class="red">*</span></li>
 		<li class="tip">这个方法精简了，简单易用的高层实现见 $.get, $.post 等。$.ajax() 返回其创建的 XMLHttpRequest 对象。你可以用该对象的abort()方法来终止函数执行。下面直接把参数列出来：<Br>
@@ -365,7 +365,7 @@
 		<li class="title">$.get(url, [data], [callback], [type]) </li>
 		<li class="tip">这是一个简单的 GET 请求功能以取代复杂 </li>
 		<li class="title">$.getJSON(url, [data], [callback]) </li>
-		<li class="tip">通过 HTTP GET 请求载入 JSON 数据</li>
+		<li class="tip">通过 HTTP GET 请求载入 JSON 数据，如果url中包含callback=?，那么将是jsonp方式请求</li>
 		<li class="title">$.post(url, [data], [callback], [type]) </li>
 		<li class="tip">这是一个简单的 POST 请求功能以取代复杂 </li>
 		<li class="title">$.getScript(url, [callback]) </li>

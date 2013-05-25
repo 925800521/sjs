@@ -765,7 +765,17 @@
 	 		},
 	 		getBox:function(){
 				//safari3.2没有getBoundingClientRect
-				if (W.HTMLElement&&(!('getBoundingClientRect' in HTMLElement))) {
+				if ('getBoundingClientRect' in D.body) {
+					var box=this[0].getBoundingClientRect();
+					return {
+						left : box.left, 
+					    right :box.right,   
+					    top : box.top,   
+					    bottom : box.bottom,
+					    width: box.right-box.left,
+					    height:box.bottom-box.top
+					}
+				}else{
 					var st = D.documentElement.scrollTop,sl = D.documentElement.scrollLeft,al = this[0].offsetLeft,
 						at = this[0].offsetTop,
 						cp = this[0].offsetParent; 
@@ -782,16 +792,6 @@
 					    width: this[0].offsetWidth,
 					    height: this[0].offsetHeight
 					}   
-				}else{
-					var box=this[0].getBoundingClientRect();
-					return {
-						left : box.left, 
-					    right :box.right,   
-					    top : box.top,   
-					    bottom : box.bottom,
-					    width: box.right-box.left,
-					    height:box.bottom-box.top
-					}
 				}
 	 		},
 	 		inBox:function(x,y){/**x，y均相对于浏览器窗口，event可用clientX,clientY*/
@@ -945,7 +945,7 @@
 			},
 			children:function(s){
 				var _s=!s?'*':s;
-					return this.find(_s);
+					return this.find(_s,true);
 			},
 			parentsUntil:function(s,f){
 				return diru('parentNode',this,s,f);
@@ -1090,26 +1090,41 @@
 					complete : null 	// 请求结束后的函数句柄,不管成功或者失败，并且传入一个XMLHttpRequest作为参数
 				};
 				if (!M.isString(url)) {return false}
+
 				var _t=new Date().getTime(),_s=s?M.extend(_s,s):_s,
-					xhr=new XMLHttpRequest,url=url.indexOf('?')>-1?url+'&':url+'?',postd=_s.data;
+					xhr=null,url=url.indexOf('?')>-1?url+'&':url+'?',postd=_s.data;
 					url+=_s.cache?'':'_t='+_t;
-						if ((_s.type).toLowerCase()=='get') {
-						url+=M.JSON.toQuery(_s.data);
-						postd=null;
-					}
-					if (_s.dataType=='blod' || _s.dataType=='arraybuffer') {
-						xhr.responseType=_s.dataType;
-					}
-	 			if (xhr) {
-	 				ajaxcall(xhr,_s);
-			        xhr.open(_s.type, url, _s.async);
-			        xhr.setRequestHeader("Accept", _s.mime);
-					xhr.setRequestHeader("Content-Type", _s.contentType+"; charset="+_s.charset+"");
-			        xhr.send(postd);
-				}else{
-					if (M.isFunction(_s.error)) {_s.error('ajax不被支持！')}
+				if ((_s.type).toLowerCase()=='get') {
+					url+='&'+M.JSON.toQuery(_s.data);
+					postd=null;
 				}
-				return xhr;
+				// jsonp
+				if (_s.dataType=='jsonp') {
+					var _fname	= 'sjs_'+sjs.uniqueId(),_kv='callback='+_fname;
+					url = url.replace(/callback=\?/i,_kv);
+					W[_fname] = function(v){
+ 						_s.success && _s.success.call(null,v);
+					}
+					var s = D.createElement('script');
+					s.async = _s.async;
+					s.src = url;
+					D.body.appendChild(s);
+				}else{
+					xhr=new XMLHttpRequest;
+					if (xhr) {
+						if (_s.dataType=='blod' || _s.dataType=='arraybuffer') {
+							xhr.responseType=_s.dataType;
+						}
+		 				ajaxcall(xhr,_s);
+				        xhr.open(_s.type, url, _s.async);
+				        xhr.setRequestHeader("Accept", _s.mime);
+						xhr.setRequestHeader("Content-Type", _s.contentType+"; charset="+_s.charset+"");
+				        xhr.send(postd);
+					}else{
+						if (M.isFunction(_s.error)) {_s.error('ajax不被支持！')}
+					}
+					return xhr;
+				}
 			},
 			ajaxForm:function(sel,s){
 					M(sel).each(function(d){
@@ -1138,12 +1153,13 @@
 			},
 			getJSON:function(u,d,f){
 				if (!u) {return false;}
-				var _d=d,_f=f;
+				var _d=d,_f=f,_ty=/callback=?/i.test(u)?'jsonp':'json';
 				if (M.isFunction(_d)) {
 					_f=_d;
 					_d=null;
 				}
-				return M.ajax(u,{success:_f,data:_d,dataType:'json'});
+				// console.log(u,_f,_d,_ty);
+				return M.ajax(u,{success:_f,data:_d,dataType:_ty});
 			},
 			getScript:function(u,f){
 				if (!u) {return false;}
