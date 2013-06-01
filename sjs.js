@@ -2,9 +2,9 @@
  * build by awen  71752352@qq.com
  * version 1.1
  */
-;(function(W,undefined){
-	var D=W.document,
-		_$$=W.$?W.$:undefined,
+(function (W, undefined) {
+	var D = W.document,
+		_$$ = W.$?W.$:undefined,
 		wn = W.navigator,
 		wl = W.location,
 		ua = wn.userAgent.toLowerCase(),
@@ -12,9 +12,9 @@
 		AP = Array.prototype,
 		RAF = W.requestAnimationFrame|| W.mozRequestAnimationFrame|| W.webkitRequestAnimationFrame|| W.msRequestAnimationFrame|| W.oRequestAnimationFrame|| function(f) {AF = setTimeout(f, 1000/60);},
 		CAF = W.cancelAnimationFrame || function(t){clearTimeout(t);},
- 		sh = /^[^<]*(<[\w\W]+>)[^>]*$|^#([\w-]+)$/,
- 		DS = {},
- 		type=function(o){
+		sh = /^[^<]*(<[\w\W]+>)[^>]*$|^#([\w-]+)$/,
+		DS = {},
+		type = function(o){
 			return o!=undefined?(Object.prototype.toString.call(o)).slice(8,-1):'undefined';
 		},
 		/*基础工具类*/
@@ -1320,11 +1320,11 @@
 			// dom事件列表，每个事件，每个dom绑定一个事件类型
 			data:{},
 			// dom代理函数事件,每个dom每个事件类型只会绑定一个func函数来代理。由于在事件中回调，所以this代表的是dom
-			// e 为event,et自定义的触发事件，不设置的话则为e自身的type，s自定义的触发对象（dom或者selector），默认为dom对象本身
+			// e 为event,et自定义的触发事件，不设置的话则为e自身的type，k自定义的触发对象（dom或者selector），默认为dom对象本身
 			trigger:function(e,et,k){
 				et=et?et:e.type;
 				var s=k?k:id(this),
-					d=s?s:this,
+					d=(k&&k.nodeType)?k:this,
 					D=k?ES.lives:ES.data,
 					el=D[et]?D[et][s]:null;
 				if (el) {
