@@ -1,5 +1,6 @@
 /**
  * build by awen  71752352@qq.com
+ * version 1.0
  */
 ;(function(W,undefined){
 	var D=W.document,
@@ -272,9 +273,13 @@
 				if (s) {
 					/**如果是函数则为ready*/
 					if (M.isFunction(s)) {
-						D.addEventListener("DOMContentLoaded", function(e) {
+						if (document.readyState == 'complete') {
 							s.call(W,M);
-						},false);
+						}else{
+							D.addEventListener("DOMContentLoaded", function(e) {
+								s.call(W,M);
+							},false);
+						}
 					}
 					// M(DOMElement)
 					if (s.nodeType) {

@@ -24,7 +24,6 @@
 	<input value="暂停动画2" type='button' title='6'>
 	<input value="恢复动画2" type='button' title='7'>
 	<input value="停止动画2" type='button' title='8'>
-
 	<hr>
 	<div id="box">box</div>
 	<br>
@@ -42,6 +41,8 @@
 		l2+=step2;
 		$('#rect').css('marginLeft',l2+'px');
 	});
+	
+	sjs('input').animate({'width':'200','background-color':'#030'},'normal','swing',function(){})
 	// ////////////////////////////////
 	$('input').on('click',function(e){
 		console.log(this.value);

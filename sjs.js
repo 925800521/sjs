@@ -10,257 +10,297 @@
 		ua = wn.userAgent.toLowerCase(),
 		av = wn.appVersion,
 		AP = Array.prototype,
-		RAF = W.requestAnimationFrame|| W.mozRequestAnimationFrame|| W.webkitRequestAnimationFrame|| W.msRequestAnimationFrame|| W.oRequestAnimationFrame|| function(f) {AF = setTimeout(f, 1000/60);},
-		CAF = W.cancelAnimationFrame || function(t){clearTimeout(t);},
 		sh = /^[^<]*(<[\w\W]+>)[^>]*$|^#([\w-]+)$/,
 		DS = {},
 		type = function(o){
 			return o!=undefined?(Object.prototype.toString.call(o)).slice(8,-1):'undefined';
+		};
+	// 初始化动画参数
+	var vs = ['','ms', 'moz', 'webkit', 'o'],RAF,CAF;
+	for (var x = 0; x < vs.length && !RAF; ++x) {
+		RAF = W[vs[x] + 'RequestAnimationFrame'];
+		CAF = W[vs[x] + 'CancelAnimationFrame'] || W[vs[x] + 'CancelRequestAnimationFrame'];
+	}
+	RAF = RAF||function(f) {return setTimeout(f, 1000/60);};
+	CAF = CAF||W.clearTimeout;
+	/*基础工具类*/
+	var UT={
+		noConflict:function(){
+			if (_$$) {W.$=_$$;}
 		},
-		/*基础工具类*/
-		UT={
-			noConflict:function(){
-				if (_$$) {W.$=_$$;}
-			},
-			uniqueId:function(){
-				var t=new Date().getTime(),r=parseInt(Math.random()*10000);
-				return t*10000+r;
-			},
-			type:type,
-			isArray:function(o){
-				return type(o)==='Array';
-			},
-			isBoolean:function(o){
-				return type(o)==='Boolean';
-			},
-			isString:function(o){
-				return type(o)==='String';
-			},
-			isFunction:function(o){
-				return type(o)==='Function';
-			},
-			isNumeric:function(o){
-				return !isNaN( parseFloat(o) ) && isFinite( o );
-			},
-			isXML: function(el) {
-	            var doc = el.ownerDocument || el;
-	            return doc.createElement("p").nodeName !== doc.createElement("P").nodeName;
-	        },
-			isPlainObject:function(o){
-				return type(o)==='Object';
-			},
-			isEmptyObject: function(o) {
-				var name;
-				for ( name in o ) {
-					return false;
-				}
-				return true;
-			},
-			/**正则*/
-			isEmptyString:function(s){
-				return (/^\s*$/ig).test(s);
-			},
-			trim:function(s){
-				return s.replace(/(^\s*)|(\s*$)/g, ""); 
-			},
-			each:function(o,f){
-				if (o.forEach) {
-					o.some(function(d,i,o){
-						return f.call(o,i,d);
-					});
-				}else{
-					for (var k in o) {
-						if (o[k]!=undefined) {
-							if(f.call(o,k,o[k])===false){
-								break;
-							}
-						}
-					}
-				}
-			},
-			grep:function(o,c,s){
-				var ret=new o.constructor,rs=s===true?false:true;
-				if(o&&c) {
-					UT.each(o,function(i,n){
-						if(c.call(o,n,i)===rs){
-							ret.push(n);
-						}
-					});
-				}
-				return ret;
-			},
-			merge:function(f,s){
-				var args=[f.length,0].concat(s);
-				AP.splice.apply(f,args);
-				return f;
-			},
-			map:function(o,f){
-				if (o&&f) {
-					var t=[];
-					for (var i = 0,l=o.length; i <l; i++) {
-						var v=f.call(o,o[i],i);
-						if (v==null) {return true}
-						if (UT.isArray(v)) {
-							UT.merge(t,v);
-						}else{
-							t.push(v);
-						}
-					}
-					o=t;
-				}
-				return o;
-			},
-			inArray:function(v,o){
-				if (AP.indexOf) {
-					  return AP.indexOf.call(o,v);  
-				}else{
-					for (var i=0,l=o.length; i < l; i++) {
-						if (o[i]==v) {return i}
-					}
-				}
-				return -1;
-			},
-			unique:uniqd,
-			/**从数组或者对象中移除*/
-			remove:function(o,k,isv){
-				var ik=k;
-				if (isv===true) {
-					ik=null;
-					for (var i in o) {
-						if (o[i]==k) {
-							ik=i;
+		uniqueId:function(){
+			var t=Date.now(),r=parseInt(Math.random()*10000);
+			return t*10000+r;
+		},
+		type:type,
+		isArray:function(o){
+			return type(o)==='Array';
+		},
+		isBoolean:function(o){
+			return type(o)==='Boolean';
+		},
+		isString:function(o){
+			return type(o)==='String';
+		},
+		isFunction:function(o){
+			return type(o)==='Function';
+		},
+		isNumeric:function(o){
+			return !isNaN( parseFloat(o) ) && isFinite( o );
+		},
+		isXML: function(el) {
+			var doc = el.ownerDocument || el;
+			return doc.createElement("p").nodeName !== doc.createElement("P").nodeName;
+		},
+		isPlainObject:function(o){
+			return type(o)==='Object';
+		},
+		isEmptyObject: function(o) {
+			var name;
+			for ( name in o ) {
+				return false;
+			}
+			return true;
+		},
+		/**正则*/
+		isEmptyString:function(s){
+			return (/^\s*$/ig).test(s);
+		},
+		trim:function(s){
+			return s.replace(/(^\s*)|(\s*$)/g, ""); 
+		},
+		each:function(o,f){
+			if (o.forEach) {
+				o.some(function(d,i,o){
+					return f.call(o,i,d);
+				});
+			}else{
+				for (var k in o) {
+					if (o[k]!=undefined) {
+						if(f.call(o,k,o[k])===false){
 							break;
 						}
 					}
 				}
-				if (ik!==undefined&&ik!==null) {
-					if (UT.isArray(o)) {
-						o.splice(ik,1);
+			}
+		},
+		grep:function(o,c,s){
+			var ret=new o.constructor,rs=s===true?false:true;
+			if(o&&c) {
+				UT.each(o,function(i,n){
+					if(c.call(o,n,i)===rs){
+						ret.push(n);
 					}
-					if (UT.isPlainObject(o)) {
-						delete o[ik];
+				});
+			}
+			return ret;
+		},
+		merge:function(f,s){
+			var args=[f.length,0].concat(s);
+			AP.splice.apply(f,args);
+			return f;
+		},
+		map:function(o,f){
+			if (o&&f) {
+				var t=[];
+				for (var i = 0,l=o.length; i <l; i++) {
+					var v=f.call(o,o[i],i);
+					if (v==null) {return true}
+					if (UT.isArray(v)) {
+						UT.merge(t,v);
+					}else{
+						t.push(v);
+					}
+				}
+				o=t;
+			}
+			return o;
+		},
+		inArray:function(v,o){
+			if (AP.indexOf) {
+				  return AP.indexOf.call(o,v);  
+			}else{
+				for (var i=0,l=o.length; i < l; i++) {
+					if (o[i]==v) {return i}
+				}
+			}
+			return -1;
+		},
+		unique:uniqd,
+		/**从数组或者对象中移除*/
+		remove:function(o,k,isv){
+			var ik=k;
+			if (isv===true) {
+				ik=null;
+				for (var i in o) {
+					if (o[i]==k) {
+						ik=i;
+						break;
+					}
+				}
+			}
+			if (ik!==undefined&&ik!==null) {
+				if (UT.isArray(o)) {
+					o.splice(ik,1);
+				}
+				if (UT.isPlainObject(o)) {
+					delete o[ik];
+				}
+			}
+			return o;
+		},
+		data:function(d,k,v){
+			return M(d).data(k,v);
+		},
+		/**json*/
+		JSON:{
+			parse:function(d){
+				if ( typeof d !== "string" || !d ) {  
+	        		return null;  
+				}
+				d =UT.trim(d);
+				return W.JSON?JSON.parse(d):eval(d);
+			},
+			stringify:function(O){
+				if (!O) {return '';}
+				if (W.JSON) {return W.JSON.stringify(O);}
+				var S = [],J = "";
+				switch(type(O)){
+					case 'Array':
+						for (var i = 0; i < O.length; i++){
+				       		S.push(this.stringify(O[i])); 
+					    }
+					    J = '[' + S.join(',') + ']'; 
+					break;
+					case 'Date':
+					 	J = "new Date(" + O.getTime() + ")"; 
+					break;
+					case 'RegExp':
+					case 'Function':
+						J = O.toString(); 
+					break;
+					case 'Object':
+					  for (var i in O) { 
+					       O[i] = typeof (O[i]) == 'string' ? '"' + O[i] + '"' : (typeof (O[i]) === 'object' ? this.stringify(O[i]) : O[i]); 
+					       S.push(i + ':' + O[i]); 
+					   } 
+					   J = '{' + S.join(',') + '}'; 
+					break;
+				}
+				return J; 
+			},
+			parseQuery:function(s){
+				var o={};
+				var os=s.split("&");
+				for(var i=0,len=os.length;i<len;i++){
+					if(os[i].indexOf("=")>-1){
+						var oi=os[i].split("=");
+						if(!( (/^\s*$/ig).test(o[0]))){
+							var v=oi[1].trim();
+							if(v=="null"||v=="undefined"){v="";}
+							o[oi[0]]=v;
+						}
 					}
 				}
 				return o;
 			},
-			data:function(d,k,v){
-				return M(d).data(k,v);
-			},
-			/**json*/
-			JSON:{
-				parse:function(d){
-					if ( typeof d !== "string" || !d ) {  
-		        		return null;  
-					}
-					d =UT.trim(d);
-					return W.JSON?JSON.parse(d):eval(d);
-				},
-				stringify:function(O){
-					if (!O) {return '';}
-					if (W.JSON) {return W.JSON.stringify(O);}
-					var S = [],J = "";
-					switch(type(O)){
+			// toQuery:function(o){
+			// 	var s="";
+			// 	for(var k in o){
+			// 		s+=UT.isEmptyString(s)?"":"&";
+			// 		var v=o[k]==null?"":o[k];
+			// 		s+=k+"="+v;
+			// 	}
+			// 	return s;
+			// },
+			toQuery: function(t) {
+				var k,v,s=[];
+				for (k in t) {
+					v = t[k];
+					switch(type(v)){
+						case 'String':
+							s[ s.length ] = encodeURIComponent(k) + "=" + encodeURIComponent( t[ k ]); 
+						break;
 						case 'Array':
-							for (var i = 0; i < O.length; i++){
-					       		S.push(this.stringify(O[i])); 
-						    }
-						    J = '[' + S.join(',') + ']'; 
+							
 						break;
-						case 'Date':
-						 	J = "new Date(" + O.getTime() + ")"; 
-						break;
-						case 'RegExp':
 						case 'Function':
-							J = O.toString(); 
+							s[ s.length ] = encodeURIComponent(k) + "=" + encodeURIComponent( t[ k ]); 
 						break;
 						case 'Object':
-						  for (var i in O) { 
-						       O[i] = typeof (O[i]) == 'string' ? '"' + O[i] + '"' : (typeof (O[i]) === 'object' ? this.stringify(O[i]) : O[i]); 
-						       S.push(i + ':' + O[i]); 
-						   } 
-						   J = '{' + S.join(',') + '}'; 
+
+						break;
+						default:
+							v ='';
 						break;
 					}
-					return J; 
-				},
-				parseQuery:function(s){
-					var o={};
-					var os=s.split("&");
-					for(var i=0,len=os.length;i<len;i++){
-						if(os[i].indexOf("=")>-1){
-							var oi=os[i].split("=");
-							if(!( (/^\s*$/ig).test(o[0]))){
-								var v=oi[1].trim();
-								if(v=="null"||v=="undefined"){v="";}
-								o[oi[0]]=v;
-							}
-						}
-					}
-					return o;
-				},
-				toQuery:function(o){
-					var s="";
-					for(var k in o){
-						s+=UT.isEmptyString(s)?"":"&";
-						var v=o[k]==null?"":o[k];
-						s+=k+"="+v;
-					}
-					return s;
-				},
-				count:function(o){
-					var n=0;
-					for (var k in o) {
-						n++;
-					}
-					return n;
+					s[ s.length ] = encodeURIComponent(k) + "=" + encodeURIComponent(v); 
 				}
+
+				function bY(a, b, c, d) {
+					if (f.isArray(b)) f.each(b, function(b, e) {
+							c || bA.test(a) ? d(a, e) : bY(a + "[" + (typeof e == "object" || f.isArray(e) ? b : "") + "]", e, c, d)
+						});
+					else if (!c && b != null && typeof b == "object") for (var e in b) bY(a + "[" + e + "]", b[e], c, d);
+					else d(a, b)
+				}
+				return s.join("&");
 			},
-			/**帧动画对象*/
-			raf:function(frame,fn) {
-				//run 动画状态  0初始 1运动 2暂停 3停止
-				var st=new Date().getTime(),_f=Math.ceil(1000/frame),run=0,
-					cnt=0,args=AP.slice.call(arguments,2),instance=this,rid=0;
-					args.unshift(cnt);
-	 			function go(){
-	 				if (run<2) {
-	 					var _t=new Date().getTime();
-						var _d=_t-st;
-						if (_d>=_f) {
-							st=_t;
-							cnt++;
-							args[0]=cnt;
-							if(fn.apply(instance,args)===false){
-								return;
-							};
-						};
-						rid = RAF(go);
-	 				};
+			count:function(o){
+				var n=0;
+				for (var k in o) {
+					n++;
 				}
- 				this.start=function(){
-					if (run==0) {
-						run=1;
-						rid = RAF(go);
-					};
-				}
-				this.pause=function(){
-					if (run==1) {
-						run=2;
-					};
-				}
-				this.resume=function(){
-					if (run==2) {
-						run=1;
-						rid = RAF(go);
-					};
-				}
-	 			this.stop=function(){
-	 				run=3;
-	 				CAF(rid);
-				}
+				return n;
 			}
 		},
-		//构建sjs对象
-		M=function(s,cxt){return new M.fn.init(s,cxt);};
+		/**帧动画对象*/
+		raf:function(frame,fn) {
+			//run 动画状态  0初始 1运动 2暂停 3停止
+			var st=Date.now(),_f=Math.ceil(1000/frame),run=0,
+				cnt=0,args=AP.slice.call(arguments,2),instance=this,rid=0;
+				args.unshift(cnt);
+ 			function go(){
+ 				if (run<2) {
+ 					var _t=Date.now();
+					var _d=_t-st;
+					if (_d>=_f) {
+						st=_t;
+						cnt++;
+						args[0]=cnt;
+						if(fn.apply(instance,args)===false){
+							return;
+						};
+					};
+					rid = RAF(go);
+ 				}
+			}
+			this.start=function(){
+				if (run==0) {
+					run=1;
+					rid = RAF(go);
+				}
+			};
+			this.pause=function(){
+				if (run==1) {
+					run=2;
+				}
+			};
+			this.resume=function(){
+				if (run==2) {
+					run=1;
+					rid = RAF(go);
+					console.log("resume>>"+rid);
+				}
+			};
+ 			this.stop=function(){
+ 				run=3;
+ 				CAF(rid);
+			};
+		}
+	},
+	//构建sjs对象
+	M=function(s,cxt){return new M.fn.init(s,cxt);};
 	//对象原型
 	M.fn=M.prototype={
 		constructor: M,
@@ -276,9 +316,13 @@
 				if (isS(s)) {return s;};
 				/**如果是函数则为ready*/
 				if (UT.isFunction(s)) {
-					D.addEventListener("DOMContentLoaded", function(e) {
+					if ( /complete|loaded|interactive/.test(D.readyState)) {
 						s.call(W,M);
-					},false);
+					}else{
+						D.addEventListener("DOMContentLoaded", function(e) {
+							s.call(W,M);
+						},false);
+					}
 				}
 				// M(DOMElement)
 				if (s.nodeType || s == W) {
@@ -547,10 +591,10 @@
 					var p=r>1?d.parentNode:null;
 				if (_s) {
 					//dom,sjs会保留事件
-						var cs=i>0?_s.clone(true):_s,
-						//集成为docfragment
-						df=D.createDocumentFragment();
-						cs.each(function(m){df.appendChild(m)});
+					var cs=i>0?_s.clone(true):_s,
+					//集成为docfragment
+					df=D.createDocumentFragment();
+					cs.each(function(m){df.appendChild(m)});
 
 					((r==1) && (d.insertBefore(df,d.firstChild))) ||
 					((r==2) && p && (((p.lastChild==d)&&p.appendChild(df))||p.insertBefore(df,d.nextSibling)))||
@@ -1091,7 +1135,7 @@
 				};
 				if (!M.isString(url)) {return false}
 
-				var _t=new Date().getTime(),_s=s?M.extend(_s,s):_s,
+				var _t=Date.now(),_s=s?M.extend(_s,s):_s,
 					xhr=null,url=url.indexOf('?')>-1?url+'&':url+'?',postd=_s.data;
 					url+=_s.cache?'':'_t='+_t;
 				if ((_s.type).toLowerCase()=='get') {
@@ -1183,34 +1227,34 @@
 	 	/**浏览器扩展*/
 	 	gwe=function(p){
 			try {
-	            if (W.external && W.external[p]) {
-	                var f=W.external[p];
-	                return UT.isFunction(f)?f():f;
-	            }
+		            if (W.external && W.external[p]) {
+		                var f=W.external[p];
+		                return UT.isFunction(f)?f():f;
+		            }
 			} catch (e) {}
-	        return '';
-	    },
+	        		return '';
+		},
 		bs={
 			isAndroid  		:(/Android/i).test(ua),
 			isIPad  		:(/ipad/i).test(ua),
 			isIPhone  		:(/iphone os/i).test(ua),
 			isWMobile		:(/Windows mobile/i).test(ua),
-			isMobile        :(/mobile|wap/).test(ua),
+			isMobile        		:(/mobile|wap/).test(ua),
 
 			isIECore		:(/Trident/i).test(ua),
-			isWebkitCore	:(/webkit/i).test(ua),
-			isGeckosCore	:(/Gecko/i).test(ua) && !(/khtml/i).test(ua),
+			isWebkitCore		:(/webkit/i).test(ua),
+			isGeckosCore		:(/Gecko/i).test(ua) && !(/khtml/i).test(ua),
 			se360			:(function(){
 						        var ret =/360se/i.test(ua)|| /360ee/i.test(ua);
 						        return ret?ret:(/360se/i).test(gwe('twGetRunPath'));
 							})(),
 			sougou			:(/MetaSr/i).test(ua),
-			qq				:(/QQBrowser/i).test(ua),
-			maxthon			:(function(){
-								return gwe('max_version').substr(0,1)>0;
-					 		})(),
+			qq			:(/QQBrowser/i).test(ua),
+			maxthon		:(function(){
+							return gwe('max_version').substr(0,1)>0;
+				 		})(),
 			opera			:W.opera?true:false,
-			firefox 		:(/Firefox/i).test(ua),
+			firefox 			:(/Firefox/i).test(ua),
 			uc  			:(/ucweb/i).test(ua),
 			liebao			:(/LBBROWSER/i).test(ua),
 			baidu			:(/BIDUBrowser/i).test(ua)||gwe('GetVersion')=='baidubrowser'
@@ -1258,7 +1302,7 @@
 			//屏蔽多点触控
 			if (tap) {
 				var touch = e.touches?e.touches[0]:e,x=touch.pageX,y=touch.pageY,dx=Math.abs(x-px),dy=Math.abs(y-py);
-			    // 优化执行  如果位移小于限制值则不进行任何操作
+			  	// 优化执行  如果位移小于限制值则不进行任何操作
 				if (dx<ES.swipeStep && dy<ES.swipeStep) {return};
  				// 判断方向
 				target=dx>dy?(x>sx?'right':'left'):(y>sy?'down':'up');
@@ -1560,7 +1604,7 @@
 				};
 				_s=M.isString(_s)?(speed[_s]||speed['normal']):_s;
 				_e=_e=='swing'?'ease-in-out':_e;
-			//更新动画队列
+				//更新动画队列
 				this.each(function(d){
 				var queue=gfx(d),tran={};
 				tran[ntp]='all';tran[ntd]=_s/1000+'s';tran[nttf]=_e;
@@ -1574,7 +1618,7 @@
 		/**启动全局动画队列*/
 		_run:function(){
 			if (atimer==null) {
-				atimer=new UT.raf(20,function(n){
+				atimer=new UT.raf(20,function(){
 					var n=0;
 					M.each(_AS,function(i,q){
 						if (q.stacks.length==0) {
@@ -1603,7 +1647,7 @@
 					if (n==0) {this.stop();atimer=null};
 				});
 				atimer&&atimer.start();
-			};
+			}
 		}
 	},
 	/**动画扩展包*/
@@ -1663,7 +1707,7 @@
 				if (f) {f.call(d)};
 			});
 		});
-		return oo;	
+		return oo;
 	};
 	UT.each(['slideDown','slideUp','slideToggle','spreadRight','spreadLeft','spreadToggle','fadeIn','fadeOut','fadeToggle'],function(i,d){
 		M.fn[d]=function(s,e,f){
