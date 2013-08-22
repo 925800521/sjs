@@ -19,7 +19,7 @@
 
 </p>
 <p>
-在线的引用地址为：http://cczw2010.github.com/sjs/sjs.min.js
+在线的引用地址为：http://cczw2010.github.com/sjs/sjs.min.js（不保证最新，最好下载最新版本）
 </p>
 </div>
 
