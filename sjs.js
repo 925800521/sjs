@@ -15,15 +15,7 @@
 		type = function(o){
 			return o!=undefined?(Object.prototype.toString.call(o)).slice(8,-1):'undefined';
 		};
-	// 初始化动画参数
-	var vs = ['','ms', 'moz', 'webkit', 'o'],RAF,CAF;
-	for (var x = 0; x < vs.length && !RAF; ++x) {
-		RAF = W[vs[x] + 'RequestAnimationFrame'];
-		CAF = W[vs[x] + 'CancelAnimationFrame'] || W[vs[x] + 'CancelRequestAnimationFrame'];
-	}
-	RAF = RAF||function(f) {return setTimeout(f, 1000/60);};
-	CAF = CAF||W.clearTimeout;
-	/*基础工具类*/
+ 	/*基础工具类*/
 	var UT={
 		noConflict:function(){
 			if (_$$) {W.$=_$$;}
@@ -56,11 +48,15 @@
 			return type(o)==='Object';
 		},
 		isEmptyObject: function(o) {
-			var name;
-			for ( name in o ) {
-				return false;
+			var ret=false;
+			if (UT.isPlainObject(o)) {
+				var name;
+				for ( name in o ) {
+					return false;
+				}
+				ret = true;
 			}
-			return true;
+			return ret;
 		},
 		/**正则*/
 		isEmptyString:function(s){
@@ -257,28 +253,23 @@
 		/**帧动画对象*/
 		raf:function(frame,fn) {
 			//run 动画状态  0初始 1运动 2暂停 3停止
-			var st=Date.now(),_f=Math.ceil(1000/frame),run=0,
+			var _f=Math.ceil(1000/frame),run=0,
 				cnt=0,args=AP.slice.call(arguments,2),instance=this,rid=0;
 				args.unshift(cnt);
  			function go(){
  				if (run<2) {
- 					var _t=Date.now();
-					var _d=_t-st;
-					if (_d>=_f) {
-						st=_t;
-						cnt++;
+ 						cnt++;
 						args[0]=cnt;
 						if(fn.apply(instance,args)===false){
 							return;
-						};
-					};
-					rid = RAF(go);
+						}
+ 					rid = setTimeout(go,_f);
  				}
 			}
 			this.start=function(){
 				if (run==0) {
 					run=1;
-					rid = RAF(go);
+					rid = setTimeout(go,_f);
 				}
 			};
 			this.pause=function(){
@@ -289,13 +280,13 @@
 			this.resume=function(){
 				if (run==2) {
 					run=1;
-					rid = RAF(go);
-					console.log("resume>>"+rid);
+					rid = setTimeout(go,_f);
+					// console.log("resume>>"+rid);
 				}
 			};
  			this.stop=function(){
- 				run=3;
- 				CAF(rid);
+ 				run=0;
+ 				W.clearTimeout(rid);
 			};
 		}
 	},
@@ -672,6 +663,9 @@
 		 				dd(d);
 					}
 	 			});
+	 		},
+	 		outerHTML:function(){
+	 			return gh(this[0]);
 	 		},
 	 		html:function(s){
 	 			if (this.length==0) {
@@ -1236,7 +1230,7 @@
 		},
 		bs={
 			isAndroid  		:(/Android/i).test(ua),
-			isIPad  		:(/ipad/i).test(ua),
+			isIPad  			:(/ipad/i).test(ua),
 			isIPhone  		:(/iphone os/i).test(ua),
 			isWMobile		:(/Windows mobile/i).test(ua),
 			isMobile        		:(/mobile|wap/).test(ua),
@@ -1339,7 +1333,7 @@
  		},
  		// dom的down操作
  		tapdown=function(e){
-			e.preventDefault();
+			bs.isAndroid&&e.preventDefault();
  			ES.touchs.push(this);
  		},
  		// dom的out操作
@@ -1530,7 +1524,7 @@
 	/**动画*/
 	var atimer=null,_AS={},_apre=bs.prefix?bs.prefix+'Transition':'transition',ntdelay=_apre+'Delay',ntp=_apre+'Property',ntd=_apre+'Duration',nttf=_apre+'TimingFunction',
 	speed={'slow':1000,'normal':600,'fast':300},
-	gfx=function(d){
+ 	gfx=function(d){
 		var i=id(d),q=_AS[i];
 		if (q==undefined) {
 			var ds=d.style,ot={};
@@ -1593,19 +1587,49 @@
 		/**animate(params,[speed],[easing],[fn])*/
 		animate:function(p,s,e,f){
 			if (!M.isPlainObject(p)||M.isEmptyObject(p)) {return this;};
-			var	a=type(s),b=type(e),
-				_s=(s==undefined||(a!='String' && a!='Number'))?'normal':s,
-				_e=(e==undefined||b!='String')?'ease':e,
-				_f=a=='Function'?s:b=='Function'?e:f;
-				if (a=='Object') {
-					_s=s.speed?s.speed:_s;
-					_e=s.easing?s.easing:_e;
-					_f=s.callback?s.callback:_f;
-				};
-				_s=M.isString(_s)?(speed[_s]||speed['normal']):_s;
-				_e=_e=='swing'?'ease-in-out':_e;
-				//更新动画队列
-				this.each(function(d){
+			var	a=type(s),b=type(e),_s='normal',_e='linear',_f=null,argl= arguments.length;
+			if (a=='Object') {
+				_s=s.speed?s.speed:_s;
+				_e=s.easing?s.easing:_e;
+				_f=s.callback?s.callback:_f;
+			}else{
+				var timfunc = /^(ease|cubic-bezier|linear).*/;
+				switch(argl){
+					case 2:
+						if (a == 'Function') {
+							_f = s;
+						}else if (a == 'String') {
+							if(timfunc.test(s)){
+								_e = s;
+							}else{
+								_s = s;
+							}
+						}else{
+							_s = s;
+						}
+					break;
+					case 3:
+						if (b == 'Function') {
+							_f = e;
+							if (a == 'String' && timfunc.test(s)) {
+								_e = s;
+							}else{
+								_s = s;
+							}
+						}else{
+							_s = s; _e = e;
+						}
+					break;
+					case 4:
+						_s = s; _e = e; _f = f;
+					break;
+				}
+			}
+			// console.log(_s,_e,a,b);
+			_s=UT.isString(_s)?(speed[_s]||speed['normal']):_s;
+			_e=_e=='swing'?'ease-in-out':_e;
+			//更新动画队列
+			this.each(function(d){
 				var queue=gfx(d),tran={};
 				tran[ntp]='all';tran[ntd]=_s/1000+'s';tran[nttf]=_e;
 				M.extend(tran,p);

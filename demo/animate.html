@@ -21,7 +21,7 @@
 	<p>
 		sjs('div').animate({'width':'90%','backgroundColor':'#030'},'normal','swing',function(){})<br>
 					.animate({'width':100,'font-size':'20px','color':'#f30'},{}).delay(1000)<br>
-					.animate({'width':300,'font-size':'5px','color':'#fff','background-color':'#333'},'slow','linear')
+					.animate({'width':300,'font-size':'5px','color':'#fff','background-color':'#333'},'ease')
 	</p>
 
 	<input type="button" name="start" value="start-animate">
@@ -46,7 +46,7 @@ sjs('input').bind('click',function(e){
 			sjs('div').animate({'width':'90%','background-color':'#030'},'normal','swing',function(){})
 					.animate({'width':100,'font-size':'20px','color':'#f30'},{})
 					.delay(1000)
-					.animate({'width':300,'font-size':'5px','color':'#fff','background-color':'#333'},'slow','linear');
+					.animate({'width':300,'font-size':'5px','color':'#fff','background-color':'#333'},'ease');
 		break;
 		case 'stop':
 			sjs('div').stop();

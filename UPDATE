@@ -1,3 +1,8 @@
+2013-8-19
+增加outerHTML
+raf的实现方式统一成setTimeout方式，（requestAnimateFrame支持力度太低，另外它的工作应只去处理刷新ui)
+修复了animate动画中参数顺序bug
+
 2013-6-18
 v1.2版本发布
 1  重写了animation 动画，策略见demo/rafs.html
