@@ -21,7 +21,7 @@
 			if (_$$) {W.$=_$$;}
 		},
 		uniqueId:function(){
-			var t=Date.now(),r=parseInt(Math.random()*10000);
+			var t=new Date-0,r=parseInt(Math.random()*10000);
 			return t*10000+r;
 		},
 		type:type,
@@ -186,6 +186,7 @@
 				return J; 
 			},
 			parseQuery:function(s){
+				s = decodeURIComponent(s);
 				var o={};
 				var os=s.split("&");
 				for(var i=0,len=os.length;i<len;i++){
@@ -194,7 +195,10 @@
 						if(!( (/^\s*$/ig).test(o[0]))){
 							var v=oi[1].trim();
 							if(v=="null"||v=="undefined"){v="";}
-							o[oi[0]]=v;
+							if (v && /(\[|\]|{|})/ig.test(v)) {
+								v = UT.JSON.parse(v);
+							}
+							o[oi[0]]= v;
 						}
 					}
 				}
@@ -213,34 +217,16 @@
 				var k,v,s=[];
 				for (k in t) {
 					v = t[k];
-					switch(type(v)){
-						case 'String':
-							s[ s.length ] = encodeURIComponent(k) + "=" + encodeURIComponent( t[ k ]); 
-						break;
-						case 'Array':
-							
-						break;
-						case 'Function':
-							s[ s.length ] = encodeURIComponent(k) + "=" + encodeURIComponent( t[ k ]); 
-						break;
-						case 'Object':
-
+					switch(typeof v){
+						case 'object':
+							v = UT.JSON.stringify(v); 
 						break;
 						default:
-							v ='';
 						break;
 					}
-					s[ s.length ] = encodeURIComponent(k) + "=" + encodeURIComponent(v); 
+					s[ s.length ] = k+'='+encodeURIComponent(v); 
 				}
-
-				function bY(a, b, c, d) {
-					if (f.isArray(b)) f.each(b, function(b, e) {
-							c || bA.test(a) ? d(a, e) : bY(a + "[" + (typeof e == "object" || f.isArray(e) ? b : "") + "]", e, c, d)
-						});
-					else if (!c && b != null && typeof b == "object") for (var e in b) bY(a + "[" + e + "]", b[e], c, d);
-					else d(a, b)
-				}
-				return s.join("&");
+				return s.join('&');
 			},
 			count:function(o){
 				var n=0;
@@ -1129,7 +1115,7 @@
 				};
 				if (!M.isString(url)) {return false}
 
-				var _t=Date.now(),_s=s?M.extend(_s,s):_s,
+				var _t=new Date-0,_s=s?M.extend(_s,s):_s,
 					xhr=null,url=url.indexOf('?')>-1?url+'&':url+'?',postd=_s.data;
 					url+=_s.cache?'':'_t='+_t;
 				if ((_s.type).toLowerCase()=='get') {
@@ -1276,9 +1262,9 @@
 			var touch = e.touches?e.touches[0]:e;
 				sx=px=touch.pageX;sy=py=touch.pageY;
 				// 长连接监控，缺点不支持终止冒泡，有点，不用每个元素单独监控，增加效率
-				st=Date.now();
+				st=new Date-0;
 				lt=setInterval(function(){
-					if (lt&&(Date.now()-st)>lto) {
+					if (lt&&(new Date-st)>lto) {
 			 			clearInterval(lt);lt=null;
 			 			e.stopPropagation=function(){
 			 				this._sbunble=true;
@@ -1653,13 +1639,13 @@
 							var stack=q.stacks[0];
 							//本dom的计数器开始
 							if (q.t==0) {
-								q.t=Date.now();
+								q.t=new Date-0;
 								if (stack.tran!=undefined) {
 									M(q.dom).css(stack.tran);
 								}
 							}else{
 								//判断结束
-								if (Date.now()-q.t>=stack.dur){
+								if (new Date-q.t>=stack.dur){
 									if(stack.fn){stack.fn.call(q.dom);}
 									q.t=0;
 									_AS[i].stacks.shift();
