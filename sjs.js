@@ -215,16 +215,18 @@
 			// },
 			toQuery: function(t) {
 				var k,v,s=[];
-				for (k in t) {
-					v = t[k];
-					switch(typeof v){
-						case 'object':
-							v = UT.JSON.stringify(v); 
-						break;
-						default:
-						break;
+				if (typeof t == 'object') {
+					for (k in t) {
+						v = t[k];
+						switch(typeof v){
+							case 'object':
+								v = UT.JSON.stringify(v); 
+							break;
+							default:
+							break;
+						}
+						s[ s.length ] = k+'='+encodeURIComponent(v); 
 					}
-					s[ s.length ] = k+'='+encodeURIComponent(v); 
 				}
 				return s.join('&');
 			},
@@ -397,8 +399,10 @@
 					case 'script':
 						res=eval(this.responseText);
 					break;
+					case 'xml':
+						res = this.responseXML;
 					default:
-						res=this.response;
+						res=this.response || this.responseText;
 					break;
 				}
 				s.success.call(s.context,res,this);
@@ -1114,42 +1118,51 @@
 					complete : null 	// 请求结束后的函数句柄,不管成功或者失败，并且传入一个XMLHttpRequest作为参数
 				};
 				if (!M.isString(url)) {return false}
-
-				var _t=new Date-0,_s=s?M.extend(_s,s):_s,
-					xhr=null,url=url.indexOf('?')>-1?url+'&':url+'?',postd=_s.data;
-					url+=_s.cache?'':'_t='+_t;
+				var _t=new Date-0,xhr=null,postd=_s.data;
+				url +=url.indexOf('?')>-1?'&':'?';
+				_s=s?M.extend(_s,s):_s;
+				url+=_s.cache?'':'_t='+_t;
 				if ((_s.type).toLowerCase()=='get') {
 					url+='&'+M.JSON.toQuery(_s.data);
 					postd=null;
-				}
-				// jsonp
-				if (_s.dataType=='jsonp') {
-					var _fname	= 'sjs_'+sjs.uniqueId(),_kv='callback='+_fname;
-					url = url.replace(/callback=\?/i,_kv);
-					W[_fname] = function(v){
- 						_s.success && _s.success.call(null,v);
-					}
-					var s = D.createElement('script');
-					s.async = _s.async;
-					s.src = url;
-					D.body.appendChild(s);
-				}else{
-					xhr=new XMLHttpRequest;
-					if (xhr) {
-						if (_s.dataType=='blod' || _s.dataType=='arraybuffer') {
-							xhr.responseType=_s.dataType;
+					// jsonp
+					if (_s.dataType=='jsonp') {
+						var _fname	= 'sjs_'+sjs.uniqueId(),_kv='callback='+_fname;
+						if (/callback=\?/i.test(url)){
+							url = url.replace(/callback=\?/i,_kv);
+						}else{
+							url +=  'callback='+_fname;
 						}
-		 				ajaxcall(xhr,_s);
-				        xhr.open(_s.type, url, _s.async);
-				        xhr.setRequestHeader("Accept", _s.mime);
-						xhr.setRequestHeader("Content-Type", _s.contentType+"; charset="+_s.charset+"");
-				        xhr.send(postd);
-					}else{
-						if (M.isFunction(_s.error)) {_s.error('ajax不被支持！')}
+						W[_fname] = function(v){
+	 						_s.success && _s.success.call(null,v);
+						}
+						var s = D.createElement('script');
+						s.type = 'text/javascript';
+						s.async = _s.async;
+						s.src = url;
+						D.body.appendChild(s);
+						return {
+							abort:function(){
+								_s.success = null;
+							}
+						};
 					}
-					return xhr;
 				}
-			},
+				xhr=new XMLHttpRequest;
+				if (xhr) {
+					if (_s.dataType=='blod' || _s.dataType=='arraybuffer') {
+						xhr.responseType=_s.dataType;
+					}
+	 				ajaxcall(xhr,_s);
+			        xhr.open(_s.type, url, _s.async);
+			        xhr.setRequestHeader("Accept", _s.mime);
+					xhr.setRequestHeader("Content-Type", _s.contentType+"; charset="+_s.charset+"");
+			        xhr.send(postd);
+				}else{
+					if (M.isFunction(_s.error)) {_s.error('ajax不被支持！')}
+				}
+				return xhr;
+ 			},
 			ajaxForm:function(sel,s){
 					M(sel).each(function(d){
 						if (d.nodeName.toLowerCase()=='form') {
