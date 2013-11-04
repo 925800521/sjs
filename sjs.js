@@ -1332,7 +1332,7 @@
  		},
  		// dom的down操作
  		tapdown=function(e){
-			bs.isAndroid&&e.preventDefault();
+			// bs.isAndroid&&e.preventDefault();
  			ES.touchs.push(this);
  		},
  		// dom的out操作
