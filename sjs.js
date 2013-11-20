@@ -569,12 +569,10 @@
 		if (s&&o.length>0){
 			var isf=M.isFunction(s),isstr=M.isString(s),iss=isS(s),_s=(!isstr&&!isf)?M(s):null,rs=[];
 				o.each(function(d,i){
-					var p=r>1?d.parentNode:null;
+					var p=r>1?d.parentNode:null,df=D.createDocumentFragment();
 				if (_s) {
 					//dom,sjs会保留事件
-					var cs=i>0?_s.clone(true):_s,
-					//集成为docfragment
-					df=D.createDocumentFragment();
+					var cs=i>0?_s.clone(true):_s;
 					cs.each(function(m){df.appendChild(m)});
 
 					((r==1) && (d.insertBefore(df,d.firstChild))) ||
@@ -583,13 +581,13 @@
 					((r==4) && p && p.replaceChild(df,d))||
 					d.appendChild(df);
 					iss&&(i>0)&&rs.push(cs);
-					}else{
-					var h=isf?s.call(d,i,d.innerHTML):s,h=r>1?cds(s,true):h;
-					((r==1)&&(d.innerHTML=h+d.innerHTML))||
+				}else{
+					var h=isf?s.call(d,i,d.innerHTML):s,h=isstr?cds(s,true):h;
+					((r==1)&&(d.insertBefore(h,d.firstChild)))||
 					((r==2) && p && (((p.lastChild==d)&&p.appendChild(h))||p.insertBefore(h,d.nextSibling)))||
 					((r==3) && p && p.insertBefore(h,d))||
 					((r==4) && p && p.replaceChild(h,d))||
-					(d.innerHTML+=h);
+					(d.appendChild(h));
 				}
 			});
 			if (iss) {
@@ -1131,10 +1129,12 @@
 						if (/callback=\?/i.test(url)){
 							url = url.replace(/callback=\?/i,_kv);
 						}else{
-							url +=  'callback='+_fname;
+							url +=  '&callback='+_fname;
 						}
 						W[_fname] = function(v){
+							// console.log(_s.succes);
 	 						_s.success && _s.success.call(null,v);
+	 						delete W[_fname];
 						}
 						var s = D.createElement('script');
 						s.type = 'text/javascript';
