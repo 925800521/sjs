@@ -1232,12 +1232,13 @@
 				}
 				var _t = new Date - 0,
 					xhr = null,
-					postd = _s.data;
-				url += url.indexOf('?') > -1 ? '&' : '?';
+					postd;
 				_s = s ? M.extend(_s, s) : _s;
+				postd = M.JSON.toQuery(_s.data);
+				url += url.indexOf('?') > -1 ? '&' : '?';
 				url += _s.cache ? '' : '_t=' + _t;
 				if ((_s.type).toLowerCase() == 'get') {
-					url += '&' + M.JSON.toQuery(_s.data);
+					url += '&' + postd;
 					postd = null;
 					// jsonp
 					if (_s.dataType == 'jsonp') {
