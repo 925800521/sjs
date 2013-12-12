@@ -116,7 +116,7 @@
 				for (var i = 0, l = o.length; i < l; i++) {
 					var v = f.call(o, o[i], i);
 					if (v == null) {
-						return true
+						return true;
 					}
 					if (UT.isArray(v)) {
 						UT.merge(t, v);
@@ -134,7 +134,7 @@
 			} else {
 				for (var i = 0, l = o.length; i < l; i++) {
 					if (o[i] == v) {
-						return i
+						return i;
 					}
 				}
 			}
@@ -229,15 +229,6 @@
 				}
 				return o;
 			},
-			// toQuery:function(o){
-			// 	var s="";
-			// 	for(var k in o){
-			// 		s+=UT.isEmptyString(s)?"":"&";
-			// 		var v=o[k]==null?"":o[k];
-			// 		s+=k+"="+v;
-			// 	}
-			// 	return s;
-			// },
 			toQuery: function(t) {
 				var k, v, s = [];
 				if (typeof t == 'object') {
@@ -516,25 +507,38 @@
 			return c.charAt(1).toUpperCase();
 		});
 	}
-	//删除classname
-	function dc(d, c) {
-		if (c && hc(d, c)) {
-			var r = new RegExp('(\\s|^)' + c);
-			d.className = d.className.replace(r, '');
+	//获取class值
+	function gc(d, n) {
+		return W.getComputedStyle(d).getPropertyValue(cnes(n)) || '';
+	}
+	//检测是否含有className
+	function hc(d, c) {
+		if ('classList' in d) {
+			return d.classList.contains(c);
+		}else{
+			var r = new RegExp('(\\s|^)' + c + '(\\s|$)');
+			return r.test(d.className);
 		}
 	}
-	//删除数据
-	function dd(d, k) {
-		var hash = id(d),
-			ds = DS[hash] || undefined;
-		if (ds) {
-			if (k) {
-				if (DS[hash][k]) {
-					delete DS[hash][k];
-				}
-			} else {
-				delete DS[hash];
+	//删除classname
+	function dc(d, c) {
+		if (c) {
+			if ('classList' in d) {
+				d.classList.remove(c);
+			}else if(hc(d, c)){
+				var r = new RegExp('(\\s|^)' + c);
+				d.className = d.className.replace(r, '');
 			}
+		}
+	}
+	// 增加classname
+	function ac(d,c){
+		if ('classList' in d) {
+			d.classList.add(c);
+		}else if(hc(d,c)){
+			var cname = d.className;
+      cname += ' ' + c;
+      d.className = cname;
 		}
 	}
 	/**借用jquery的，挺精简的
@@ -584,16 +588,6 @@
 		r = M(uniqd(ps));
 		return s ? r.filter(s) : r;
 	}
-	//获取class值
-	function gc(d, n) {
-		return W.getComputedStyle(d).getPropertyValue(cnes(n)) || '';
-	}
-	//获取元素数据
-	function gd(d, k) {
-		var hash = id(d),
-			ds = DS[hash] || undefined;
-		return k == undefined ? ds : (ds && (ds[k] != undefined)) ? ds[k] : undefined;
-	}
 	//获取dom的outhtml代码
 	function gh(d) {
 		if (d.outerHTML) {
@@ -602,11 +596,6 @@
 		var t = D.createElement('div');
 		t.appendChild(d.cloneNode(true));
 		return t.innerHTML;
-	}
-	//检测是否含有className
-	function hc(d, c) {
-		var r = new RegExp('(\\s|^)' + c + '(\\s|$)');
-		return r.test(d.className);
 	}
 	//获取dom对象的唯一标志,e强制重新获取
 	function id(d, e) {
@@ -666,6 +655,12 @@
 		}
 		return o;
 	}
+	//获取元素数据
+	function gd(d, k) {
+		var hash = id(d),
+			ds = DS[hash] || undefined;
+		return k == undefined ? ds : (ds && (ds[k] != undefined)) ? ds[k] : undefined;
+	}
 	//设置元素数据
 	function sd(d, k, v) {
 		var hash = id(d);
@@ -673,6 +668,20 @@
 			DS[hash] = {};
 		}
 		DS[hash][k] = v;
+	}
+	//删除数据
+	function dd(d, k) {
+		var hash = id(d),
+			ds = DS[hash] || undefined;
+		if (ds) {
+			if (k) {
+				if (DS[hash][k]) {
+					delete DS[hash][k];
+				}
+			} else {
+				delete DS[hash];
+			}
+		}
 	}
 	//常规数组去重
 	function uniq(o) {
@@ -945,14 +954,14 @@
 				var sc = M.trim(d.className);
 				if (cs == null) {
 					var cn = c.call(d, i, sc);
-					if (cn && !hc(d, cn)) {
-						d.className = sc + ' ' + cn;
+					if (cn) {
+						ac(d,cn);
 					}
 				} else {
 					M.each(cs, function(i, cn) {
 						sc = M.trim(d.className);
-						if (cn && !hc(d, cn)) {
-							d.className = sc + ' ' + cn;
+						if (cn) {
+							ac(d,cn);
 						}
 					});
 				}
@@ -967,11 +976,10 @@
 				if (c == undefined) {
 					return (d.className = '');
 				};
-				var sc = M.trim(d.className);
 				if (cs == null) {
-					var cn = c.call(d, i, sc);
-					if (cn && hc(d, cn)) {
-						dc(d, cn)
+					var cn = c.call(d, i, d.className);
+					if (cn) {
+						dc(d, cn);
 					}
 				} else {
 					M.each(cs, function(i, cn) {
@@ -993,16 +1001,15 @@
 						if (hc(d, cn)) {
 							dc(d, cn)
 						} else {
-							d.className = sc + ' ' + cn
+							ac(d,cn);
 						}
 					}
 				} else {
 					M.each(cs, function(i, ci) {
-						sc = M.trim(d.className);
 						if (hc(d, ci)) {
 							dc(d, ci)
 						} else {
-							d.className = sc + ' ' + ci
+							ac(d,ci);
 						}
 					});
 				}

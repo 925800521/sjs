@@ -17,7 +17,7 @@
 </head>
 <body>
 	<p>
-		className操作测试。jQuery完胜，sjs高频率循环惨败，后期会优化<br>
+		className操作测试。从测试结果看出，半斤八两<br>
 		（*请在控制台中中查看性能分析测试。没有用任何测试函数，纯代码计算换时间的精准，因为封个函数测试调用函数也会耗系统时间）
 	</p>
 	<div class='test' id="id1">div#id1</div>
@@ -104,6 +104,59 @@
  			};
  			console.groupEnd();
 		}
+
+		// 单个dom测试，排除其他因素，例如选择器，循环
+		var domsjs = sjs('body'),domjq = jQuery('body');
+		console.group("选择器：dom");
+		for (var j = 0,l=cnts.length; j <l; j++) {
+ 				console.group("运行次数="+cnts[j]);
+ 				////////////设置数据//////////////////////
+ 				console.group("设置className");
+ 				//sjs
+ 				console.time('sjs');
+ 				for (var m=0,n=cnts[j]; m <n; m++) {
+ 					 domsjs.addClass('cname');
+ 				}
+ 				console.timeEnd('sjs');
+				//jquery
+ 				console.time('jQuery');
+ 				for (var m=0,n=cnts[j]; m <n; m++) {
+ 					 domjq.addClass('cname1');
+ 				}
+ 				console.timeEnd('jQuery');
+ 				console.groupEnd();
+ 				////////////删除数据//////////////////////
+ 				console.group("删除className");
+ 				//sjs
+ 				console.time('sjs');
+ 				for (var m=0,n=cnts[j]; m <n; m++) {
+ 					domsjs.removeClass('cname');
+ 				}
+ 				console.timeEnd('sjs');
+				//jquery
+ 				console.time('jQuery');
+ 				for (var m=0,n=cnts[j]; m <n; m++) {
+ 					 domjq.removeClass('cname1');
+ 				}
+ 				console.timeEnd('jQuery');
+ 				console.groupEnd();
+ 				////////////toggle切换className//////////////////////
+ 				console.group("toggle切换className");
+ 				//sjs
+ 				console.time('sjs');
+ 				for (var m=0,n=cnts[j]; m <n; m++) {
+ 					domsjs.toggleClass('cname');
+ 				}
+ 				console.timeEnd('sjs');
+				//jquery
+ 				console.time('jQuery');
+ 				for (var m=0,n=cnts[j]; m <n; m++) {
+ 					 domjq.toggleClass('cname1');
+ 				}
+ 				console.timeEnd('jQuery');
+ 				console.groupEnd();
+ 				console.groupEnd();
+ 			};
 	</script>
 </body>
 </html>
